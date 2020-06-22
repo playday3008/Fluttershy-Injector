@@ -16,8 +16,9 @@ namespace Injector
     public partial class Main : MetroForm
     {
         private int SelectedProcessId = 0;
-        bool x64 = false;
-        bool? x32 = false;
+        private bool x64 = false;
+        private bool? x32 = false;
+        private bool spin = false;
         DialogResult archDll = DialogResult.None;
 
         public Main()
@@ -43,32 +44,6 @@ namespace Injector
                 }
             }
             ProcessList.DropDownWidth = Convert.ToInt32(maxWidth * 1.35);
-        }
-
-        private void ProcessList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2));
-            if (Process.GetProcesses().Any(x => x.Id == SelectedProcessId))
-            {
-                try
-                {
-                    if (IsWin64Emulator(Process.GetProcessById(SelectedProcessId)))
-                        x64 = false;
-                    else
-                        x64 = true;
-                }
-                catch (Win32Exception ex)
-                {
-                    if (ex.NativeErrorCode != 0x00000005)
-                    {
-                        throw;
-                    }
-                }
-                SelectedProcLabel.Text = "Process: " + Process.GetProcessById(SelectedProcessId).ProcessName + ".exe" + (x64 ? " (x64)" : " (x32)");
-                SelectedPidLabel.Text = "PID: " + SelectedProcessId;
-            }
-            else
-                MetroMessageBox.Show(this, "Please refresh list", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
         private void OpenFileButton_Click(object sender, EventArgs e)
@@ -99,9 +74,11 @@ namespace Injector
         {
             if (!x64 & x32 == false & ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
             {
+                LoadingSpinRun(true);
                 SwitchUI(true);
                 var injector = new ManualMapInjector(Process.GetProcessById(SelectedProcessId)) { AsyncInjection = true };
                 MetroMessageBox.Show(this, "Inject result:" + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
+                LoadingSpinRun(false);
                 SwitchUI(false);
             }
             else if (ProcessList.SelectedItem == null)
@@ -112,6 +89,19 @@ namespace Injector
                 MetroMessageBox.Show(this, "INCORRECT DLL PATH", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
             else if (x32 == true)
                 MetroMessageBox.Show(this, "ONLY x32 DLL'S", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+        }
+
+        private void VACBypassLabel_Click(object sender, EventArgs e)
+        {
+            DialogResult vac = MetroMessageBox.Show(this, "Do you want start VAC-Bypass?", "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
+            if (vac == DialogResult.Yes)
+            {
+                LoadingSpinRun(true);
+                SwitchUI(true);
+                VACBypassRun();
+                LoadingSpinRun(false);
+                SwitchUI(false);
+            }
         }
 
         private void DllPathTextBox_TextChanged(object sender, EventArgs e)
@@ -132,7 +122,161 @@ namespace Injector
                 SelectedDllLabel.Text = "DLL: ";
         }
 
+        private void ProcessList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2));
+            if (Process.GetProcesses().Any(x => x.Id == SelectedProcessId))
+            {
+                try
+                {
+                    if (IsWin64Emulator(Process.GetProcessById(SelectedProcessId)))
+                        x64 = false;
+                    else
+                        x64 = true;
+                }
+                catch (Win32Exception ex)
+                {
+                    if (ex.NativeErrorCode != 0x00000005)
+                    {
+                        throw;
+                    }
+                }
+                SelectedProcLabel.Text = "Process: " + Process.GetProcessById(SelectedProcessId).ProcessName + ".exe" + (x64 ? " (x64)" : " (x32)");
+                SelectedPidLabel.Text = "PID: " + SelectedProcessId;
+            }
+            else
+                MetroMessageBox.Show(this, "Please refresh list", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+        }
+
+        private void GitHubLink_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/playday3008");
+        }
+
+        private void MySiteLink_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://wind0wn.xyz/");
+        }
+
+        private void GitHubLink_MouseHover(object sender, EventArgs e)
+        {
+            toolTip.SetToolTip(GitHubLink, "https://github.com/playday3008");// show tooltip with some text
+        }
+
+        private void MySiteLink_MouseHover(object sender, EventArgs e)
+        {
+            toolTip.SetToolTip(MySiteLink, "https://wind0wn.xyz/");// show tooltip with some text
+        }
+
         #region Functions
+
+        private async void VACBypassRun()// Bypass Loader code
+        {
+            // find steam.exe path, then kill him
+            string steampath = null;
+            await Task.Run(() =>
+            {
+                Process[] steams = Process.GetProcessesByName("steam");
+                foreach (var steam in steams)
+                {
+                    steampath = steam.MainModule.FileName;
+                    steam.Kill();
+                }
+
+                ProcessStartInfo connection = new ProcessStartInfo
+                {
+                    FileName = "ipconfig",
+                    Arguments = "/release", // or /release if you want to disconnect
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+                Process p = Process.Start(connection);
+                p.WaitForExit();
+                Thread.Sleep(2000);
+                ProcessStartInfo info = new ProcessStartInfo(steampath)
+                {
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };// depends your csgo installation folder
+                Process.Start(info);
+                Thread.Sleep(4000);
+
+                // inject VACBypass
+                var injector = new ManualMapInjector(Process.GetProcessesByName("steam")[0]) { AsyncInjection = true };
+                injector.Inject(Properties.Resources.VACBypass);
+
+                Thread.Sleep(1000);
+                connection.Arguments = "/renew"; // or /release if you want to disconnect
+                Process o = Process.Start(connection);
+                o.WaitForExit();
+            });
+        }
+
+        private void LoadingSpinRun(bool spinRun)
+        {
+            if (spinRun)
+            {
+                metroProgressSpinner1.Enabled = true;
+                metroProgressSpinner1.Visible = true;
+                spin = true;
+                LoadingSpin();
+            }
+            else if (!spinRun)
+            {
+                metroProgressSpinner1.Enabled = false;
+                metroProgressSpinner1.Visible = false;
+                spin = false;
+                LoadingSpin();
+                metroProgressSpinner1.Speed = 1;
+                metroProgressSpinner1.Value = 1;
+            }
+        }
+
+        private async void LoadingSpin()
+        {
+            bool max = false, min = false;
+            while (spin)
+            {
+                await Task.Run(() => Thread.Sleep(10));
+                if (metroProgressSpinner1.Value == 80)
+                    max = true;
+                if (metroProgressSpinner1.Value == 0)
+                    min = true;
+                if (min)
+                {
+                    metroProgressSpinner1.Speed = 1;
+                    metroProgressSpinner1.Value++;
+                    if (metroProgressSpinner1.Value == 80)
+                        min = false;
+                }
+                else if (max)
+                {
+                    metroProgressSpinner1.Speed = 2.5f;
+                    metroProgressSpinner1.Value--;
+                    if (metroProgressSpinner1.Value == 0)
+                        max = false;
+                }
+            }
+        }
+
+        private void SwitchUI(bool flip)
+        {
+            if (flip)
+            {
+                InjectButton.Enabled = false;
+                ProcessList.Enabled = false;
+                OpenFileButton.Enabled = false;
+                RefreshButton.Enabled = false;
+                DllPathTextBox.Enabled = false;
+            }
+            else if (!flip)
+            {
+                InjectButton.Enabled = true;
+                ProcessList.Enabled = true;
+                OpenFileButton.Enabled = true;
+                RefreshButton.Enabled = true;
+                DllPathTextBox.Enabled = true;
+            }
+        }
 
         private static bool IsWin64Emulator(Process process)
         {
@@ -207,76 +351,6 @@ namespace Injector
                     return null;
             }
         }
-
-        private void SwitchUI(bool flip)
-        {
-            if (flip)
-            {
-                InjectButton.Enabled = false;
-                ProcessList.Enabled = false;
-                OpenFileButton.Enabled = false;
-                RefreshButton.Enabled = false;
-                DllPathTextBox.Enabled = false;
-            }
-            else if (!flip)
-            {
-                InjectButton.Enabled = true;
-                ProcessList.Enabled = true;
-                OpenFileButton.Enabled = true;
-                RefreshButton.Enabled = true;
-                DllPathTextBox.Enabled = true;
-            }
-        }
         #endregion
-
-        #region VAC-Bypass
-        private async void VACBypassRun()// Bypass Loader code
-        {
-            // find steam.exe path, then kill him
-            string steampath = null;
-            await Task.Run(() =>
-            {
-                Process[] steams = Process.GetProcessesByName("steam");
-                foreach (var steam in steams)
-                {
-                    steampath = steam.MainModule.FileName;
-                    steam.Kill();
-                }
-
-                ProcessStartInfo connection = new ProcessStartInfo
-                {
-                    FileName = "ipconfig",
-                    Arguments = "/release", // or /release if you want to disconnect
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                Process p = Process.Start(connection);
-                p.WaitForExit();
-                Thread.Sleep(2000);
-                ProcessStartInfo info = new ProcessStartInfo(steampath)
-                {
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };// depends your csgo installation folder
-                Process.Start(info);
-                Thread.Sleep(4000);
-
-                // inject VACBypass
-                var injector = new ManualMapInjector(Process.GetProcessesByName("steam")[0]) { AsyncInjection = true };
-                injector.Inject(Properties.Resources.VACBypass);
-
-                Thread.Sleep(1000);
-                connection.Arguments = "/renew"; // or /release if you want to disconnect
-                Process o = Process.Start(connection);
-                o.WaitForExit();
-            });
-        }
-        #endregion
-
-        private void VACBypassLabel_Click(object sender, EventArgs e)
-        {
-            SwitchUI(true);
-            VACBypassRun();
-            SwitchUI(false);
-        }
     }
 }
