@@ -69,5 +69,15 @@ namespace Injector.Properties {
                 return ((System.Drawing.Icon)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] VACBypass {
+            get {
+                object obj = ResourceManager.GetObject("VACBypass", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

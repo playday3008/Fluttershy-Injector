@@ -41,10 +41,12 @@
             this.OpenFileButton = new MetroFramework.Controls.MetroButton();
             this.SelectedDllLabel = new MetroFramework.Controls.MetroLabel();
             this.InjectButton = new MetroFramework.Controls.MetroButton();
+            this.VACBypassLabel = new MetroFramework.Controls.MetroLabel();
             this.SuspendLayout();
             // 
             // ProcessList
             // 
+            this.ProcessList.Cursor = System.Windows.Forms.Cursors.Hand;
             this.ProcessList.FormattingEnabled = true;
             this.ProcessList.ItemHeight = 23;
             this.ProcessList.Location = new System.Drawing.Point(23, 82);
@@ -73,6 +75,7 @@
             // 
             // RefreshButton
             // 
+            this.RefreshButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.RefreshButton.Location = new System.Drawing.Point(302, 53);
             this.RefreshButton.Name = "RefreshButton";
             this.RefreshButton.Size = new System.Drawing.Size(75, 23);
@@ -187,6 +190,7 @@
             // 
             // OpenFileButton
             // 
+            this.OpenFileButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.OpenFileButton.Location = new System.Drawing.Point(302, 181);
             this.OpenFileButton.Name = "OpenFileButton";
             this.OpenFileButton.Size = new System.Drawing.Size(75, 23);
@@ -214,6 +218,7 @@
             // 
             // InjectButton
             // 
+            this.InjectButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.InjectButton.FontSize = MetroFramework.MetroButtonSize.Medium;
             this.InjectButton.Location = new System.Drawing.Point(296, 229);
             this.InjectButton.Name = "InjectButton";
@@ -226,11 +231,27 @@
             this.InjectButton.UseStyleColors = true;
             this.InjectButton.Click += new System.EventHandler(this.InjectButton_Click);
             // 
+            // VACBypassLabel
+            // 
+            this.VACBypassLabel.AutoSize = true;
+            this.VACBypassLabel.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.VACBypassLabel.FontWeight = MetroFramework.MetroLabelWeight.Bold;
+            this.VACBypassLabel.Location = new System.Drawing.Point(196, 235);
+            this.VACBypassLabel.Name = "VACBypassLabel";
+            this.VACBypassLabel.Size = new System.Drawing.Size(94, 19);
+            this.VACBypassLabel.Style = MetroFramework.MetroColorStyle.Purple;
+            this.VACBypassLabel.TabIndex = 12;
+            this.VACBypassLabel.Text = "VAC-Bypass?";
+            this.VACBypassLabel.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.VACBypassLabel.UseStyleColors = true;
+            this.VACBypassLabel.Click += new System.EventHandler(this.VACBypassLabel_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 284);
+            this.Controls.Add(this.VACBypassLabel);
             this.Controls.Add(this.InjectButton);
             this.Controls.Add(this.SelectedDllLabel);
             this.Controls.Add(this.OpenFileButton);
@@ -269,6 +290,7 @@
         private MetroFramework.Controls.MetroButton OpenFileButton;
         private MetroFramework.Controls.MetroLabel SelectedDllLabel;
         private MetroFramework.Controls.MetroButton InjectButton;
+        private MetroFramework.Controls.MetroLabel VACBypassLabel;
     }
 }
 

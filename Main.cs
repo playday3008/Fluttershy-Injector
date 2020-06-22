@@ -7,89 +7,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Injector
 {
     public partial class Main : MetroForm
     {
-        #region Functions
-
-        private static bool IsWin64Emulator(Process process)
-        {
-            if ((Environment.OSVersion.Version.Major > 5)
-                || ((Environment.OSVersion.Version.Major == 5) && (Environment.OSVersion.Version.Minor >= 1)))
-                return NativeMethods.IsWow64Process(process.Handle, out bool retVal) && retVal;
-
-            return false; // not on 64-bit Windows Emulator
-        }
-
-        internal static class NativeMethods
-        {
-            [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
-        }
-
-        private static MachineType GetDllMachineType(string dllPath)
-        {
-            //see http://www.microsoft.com/whdc/system/platform/firmware/PECOFF.mspx
-            //offset to PE header is always at 0x3C
-            //PE header starts with "PE\0\0" =  0x50 0x45 0x00 0x00
-            //followed by 2-byte machine type field (see document above for enum)
-            FileStream fs = new FileStream(dllPath, FileMode.Open, FileAccess.Read);
-            BinaryReader br = new BinaryReader(fs);
-            fs.Seek(0x3c, SeekOrigin.Begin);
-            Int32 peOffset = br.ReadInt32();
-            fs.Seek(peOffset, SeekOrigin.Begin);
-            UInt32 peHead = br.ReadUInt32();
-            if (peHead != 0x00004550) // "PE\0\0", little-endian
-                throw new Exception("Can't find PE header");
-            MachineType machineType = (MachineType)br.ReadUInt16();
-            br.Close();
-            fs.Close();
-            return machineType;
-        }
-
-        private enum MachineType : ushort
-        {
-            IMAGE_FILE_MACHINE_UNKNOWN = 0x0,
-            IMAGE_FILE_MACHINE_AM33 = 0x1d3,
-            IMAGE_FILE_MACHINE_AMD64 = 0x8664,
-            IMAGE_FILE_MACHINE_ARM = 0x1c0,
-            IMAGE_FILE_MACHINE_EBC = 0xebc,
-            IMAGE_FILE_MACHINE_I386 = 0x14c,
-            IMAGE_FILE_MACHINE_IA64 = 0x200,
-            IMAGE_FILE_MACHINE_M32R = 0x9041,
-            IMAGE_FILE_MACHINE_MIPS16 = 0x266,
-            IMAGE_FILE_MACHINE_MIPSFPU = 0x366,
-            IMAGE_FILE_MACHINE_MIPSFPU16 = 0x466,
-            IMAGE_FILE_MACHINE_POWERPC = 0x1f0,
-            IMAGE_FILE_MACHINE_POWERPCFP = 0x1f1,
-            IMAGE_FILE_MACHINE_R4000 = 0x166,
-            IMAGE_FILE_MACHINE_SH3 = 0x1a2,
-            IMAGE_FILE_MACHINE_SH3DSP = 0x1a3,
-            IMAGE_FILE_MACHINE_SH4 = 0x1a6,
-            IMAGE_FILE_MACHINE_SH5 = 0x1a8,
-            IMAGE_FILE_MACHINE_THUMB = 0x1c2,
-            IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x169,
-        }
-
-        private static bool? UnmanagedDllIs64Bit(string dllPath) // returns true if the dll is 64-bit, false if 32-bit, and null if unknown
-        {
-            switch (GetDllMachineType(dllPath))
-            {
-                case MachineType.IMAGE_FILE_MACHINE_AMD64:
-                case MachineType.IMAGE_FILE_MACHINE_IA64:
-                    return true;
-                case MachineType.IMAGE_FILE_MACHINE_I386:
-                    return false;
-                default:
-                    return null;
-            }
-        }
-        #endregion
-
         private int SelectedProcessId = 0;
         bool x64 = false;
         bool? x32 = false;
@@ -174,8 +99,10 @@ namespace Injector
         {
             if (!x64 & x32 == false & ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
             {
+                SwitchUI(true);
                 var injector = new ManualMapInjector(Process.GetProcessById(SelectedProcessId)) { AsyncInjection = true };
                 MetroMessageBox.Show(this, "Inject result:" + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
+                SwitchUI(false);
             }
             else if (ProcessList.SelectedItem == null)
                 MetroMessageBox.Show(this, "SELCET PROCESS FIRST", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
@@ -203,6 +130,153 @@ namespace Injector
             }
             else
                 SelectedDllLabel.Text = "DLL: ";
+        }
+
+        #region Functions
+
+        private static bool IsWin64Emulator(Process process)
+        {
+            if ((Environment.OSVersion.Version.Major > 5)
+                || ((Environment.OSVersion.Version.Major == 5) && (Environment.OSVersion.Version.Minor >= 1)))
+                return NativeMethods.IsWow64Process(process.Handle, out bool retVal) && retVal;
+
+            return false; // not on 64-bit Windows Emulator
+        }
+
+        internal static class NativeMethods
+        {
+            [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
+        }
+
+        private static MachineType GetDllMachineType(string dllPath)
+        {
+            //see http://www.microsoft.com/whdc/system/platform/firmware/PECOFF.mspx
+            //offset to PE header is always at 0x3C
+            //PE header starts with "PE\0\0" =  0x50 0x45 0x00 0x00
+            //followed by 2-byte machine type field (see document above for enum)
+            FileStream fs = new FileStream(dllPath, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            fs.Seek(0x3c, SeekOrigin.Begin);
+            Int32 peOffset = br.ReadInt32();
+            fs.Seek(peOffset, SeekOrigin.Begin);
+            UInt32 peHead = br.ReadUInt32();
+            if (peHead != 0x00004550) // "PE\0\0", little-endian
+                throw new Exception("Can't find PE header");
+            MachineType machineType = (MachineType)br.ReadUInt16();
+            br.Close();
+            fs.Close();
+            return machineType;
+        }
+
+        private enum MachineType : ushort
+        {
+            IMAGE_FILE_MACHINE_UNKNOWN = 0x0,
+            IMAGE_FILE_MACHINE_AM33 = 0x1d3,
+            IMAGE_FILE_MACHINE_AMD64 = 0x8664,
+            IMAGE_FILE_MACHINE_ARM = 0x1c0,
+            IMAGE_FILE_MACHINE_EBC = 0xebc,
+            IMAGE_FILE_MACHINE_I386 = 0x14c,
+            IMAGE_FILE_MACHINE_IA64 = 0x200,
+            IMAGE_FILE_MACHINE_M32R = 0x9041,
+            IMAGE_FILE_MACHINE_MIPS16 = 0x266,
+            IMAGE_FILE_MACHINE_MIPSFPU = 0x366,
+            IMAGE_FILE_MACHINE_MIPSFPU16 = 0x466,
+            IMAGE_FILE_MACHINE_POWERPC = 0x1f0,
+            IMAGE_FILE_MACHINE_POWERPCFP = 0x1f1,
+            IMAGE_FILE_MACHINE_R4000 = 0x166,
+            IMAGE_FILE_MACHINE_SH3 = 0x1a2,
+            IMAGE_FILE_MACHINE_SH3DSP = 0x1a3,
+            IMAGE_FILE_MACHINE_SH4 = 0x1a6,
+            IMAGE_FILE_MACHINE_SH5 = 0x1a8,
+            IMAGE_FILE_MACHINE_THUMB = 0x1c2,
+            IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x169,
+        }
+
+        private static bool? UnmanagedDllIs64Bit(string dllPath) // returns true if the dll is 64-bit, false if 32-bit, and null if unknown
+        {
+            switch (GetDllMachineType(dllPath))
+            {
+                case MachineType.IMAGE_FILE_MACHINE_AMD64:
+                case MachineType.IMAGE_FILE_MACHINE_IA64:
+                    return true;
+                case MachineType.IMAGE_FILE_MACHINE_I386:
+                    return false;
+                default:
+                    return null;
+            }
+        }
+
+        private void SwitchUI(bool flip)
+        {
+            if (flip)
+            {
+                InjectButton.Enabled = false;
+                ProcessList.Enabled = false;
+                OpenFileButton.Enabled = false;
+                RefreshButton.Enabled = false;
+                DllPathTextBox.Enabled = false;
+            }
+            else if (!flip)
+            {
+                InjectButton.Enabled = true;
+                ProcessList.Enabled = true;
+                OpenFileButton.Enabled = true;
+                RefreshButton.Enabled = true;
+                DllPathTextBox.Enabled = true;
+            }
+        }
+        #endregion
+
+        #region VAC-Bypass
+        private async void VACBypassRun()// Bypass Loader code
+        {
+            // find steam.exe path, then kill him
+            string steampath = null;
+            await Task.Run(() =>
+            {
+                Process[] steams = Process.GetProcessesByName("steam");
+                foreach (var steam in steams)
+                {
+                    steampath = steam.MainModule.FileName;
+                    steam.Kill();
+                }
+
+                ProcessStartInfo connection = new ProcessStartInfo
+                {
+                    FileName = "ipconfig",
+                    Arguments = "/release", // or /release if you want to disconnect
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+                Process p = Process.Start(connection);
+                p.WaitForExit();
+                Thread.Sleep(2000);
+                ProcessStartInfo info = new ProcessStartInfo(steampath)
+                {
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };// depends your csgo installation folder
+                Process.Start(info);
+                Thread.Sleep(4000);
+
+                // inject VACBypass
+                var injector = new ManualMapInjector(Process.GetProcessesByName("steam")[0]) { AsyncInjection = true };
+                injector.Inject(Properties.Resources.VACBypass);
+
+                Thread.Sleep(1000);
+                connection.Arguments = "/renew"; // or /release if you want to disconnect
+                Process o = Process.Start(connection);
+                o.WaitForExit();
+            });
+        }
+        #endregion
+
+        private void VACBypassLabel_Click(object sender, EventArgs e)
+        {
+            SwitchUI(true);
+            VACBypassRun();
+            SwitchUI(false);
         }
     }
 }
