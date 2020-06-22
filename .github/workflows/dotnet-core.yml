@@ -1,0 +1,42 @@
+name: .NET Core
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          submodules: true
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.0
+    - name: Prepare Fluttershy-Injector
+      working-directory: ./Fluttershy-Injector
+      run: msbuild Fluttershy-Injector.csproj /p:Configuration=Release -t:restore
+    - name: Build Fluttershy-Injector
+      working-directory: ./Fluttershy-Injector
+      run: msbuild Fluttershy-Injector.csproj /p:Configuration=Release
+    - name: Move before upload
+      working-directory: ./Fluttershy-Injector/bin/Release
+      run: |
+            mkdir ready
+            Move-Item -Path .\Fluttershy-Injector.exe -Destination .\ready\Fluttershy-Injector.exe
+      shell: pwsh
+    - name: SHA1 Fluttershy-Injector
+      working-directory: ./Fluttershy-Injector/bin/Release/ready
+      run: sha1sum Fluttershy-Injector.exe > Fluttershy-Injector.exe.sha1
+    - uses: actions/upload-artifact@v1
+      with:
+        name: Release Fluttershy-Injector
+        path: ./Fluttershy-Injector/bin/Release/ready
