@@ -266,6 +266,7 @@
             // 
             // GitHubLink
             // 
+            this.GitHubLink.Cursor = System.Windows.Forms.Cursors.Hand;
             this.GitHubLink.Location = new System.Drawing.Point(23, 238);
             this.GitHubLink.Name = "GitHubLink";
             this.GitHubLink.Size = new System.Drawing.Size(71, 23);
@@ -281,6 +282,7 @@
             // MySiteLink
             // 
             this.MySiteLink.AutoSize = true;
+            this.MySiteLink.Cursor = System.Windows.Forms.Cursors.Hand;
             this.MySiteLink.Location = new System.Drawing.Point(100, 238);
             this.MySiteLink.Name = "MySiteLink";
             this.MySiteLink.Size = new System.Drawing.Size(52, 23);
