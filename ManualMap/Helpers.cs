@@ -21,7 +21,7 @@ namespace ManualMapInjection.Injection
             return sb.ToString();
         }
 
-        internal static bool _stricmp(char[] str1, char[] str2)
+        internal static bool Stricmp(char[] str1, char[] str2)
         {
             var min = Math.Min(str1.Length, str2.Length);
             for (var i = 0; i < min; i++)

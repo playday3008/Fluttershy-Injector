@@ -112,8 +112,7 @@ namespace ManualMapInjection.Injection
 
             var buffer = Encoding.ASCII.GetBytes(dependency);
 
-            UIntPtr bytesWritten;
-            var result = Imports.WriteProcessMemory(_hProcess, lpAddress, buffer, buffer.Length, out bytesWritten);
+            var result = Imports.WriteProcessMemory(_hProcess, lpAddress, buffer, buffer.Length, out UIntPtr bytesWritten);
 
             if (result)
             {
@@ -145,8 +144,7 @@ namespace ManualMapInjection.Injection
             var dwSize = (uint)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION));
             var pbi = (PPROCESS_BASIC_INFORMATION)Imports.HeapAlloc(hHeap, /*HEAP_ZERO_MEMORY*/ 0x8, new UIntPtr(dwSize));
 
-            uint dwSizeNeeded;
-            var dwStatus = Imports.NtQueryInformationProcess(_hProcess, /*ProcessBasicInformation*/ 0, pbi.Address, dwSize, out dwSizeNeeded);
+            var dwStatus = Imports.NtQueryInformationProcess(_hProcess, /*ProcessBasicInformation*/ 0, pbi.Address, dwSize, out uint dwSizeNeeded);
 
             if (dwStatus >= 0 && dwSize < dwSizeNeeded)
             {
@@ -172,25 +170,20 @@ namespace ManualMapInjection.Injection
             {
                 if (pbi.Value.PebBaseAddress != IntPtr.Zero)
                 {
-                    UIntPtr dwBytesRead;
-                    uint pebLdrAddress;
-
-                    if (Imports.ReadProcessMemory(_hProcess, pbi.Value.PebBaseAddress + 12 /*peb.Ldr*/, out pebLdrAddress, out dwBytesRead))
+                    if (Imports.ReadProcessMemory(_hProcess, pbi.Value.PebBaseAddress + 12 /*peb.Ldr*/, out uint pebLdrAddress, out UIntPtr dwBytesRead))
                     {
                         var pLdrListHead = pebLdrAddress + /*InLoadOrderModuleList*/ 0x0C;
                         var pLdrCurrentNode = pebLdrAddress + /*InLoadOrderModuleList*/ 0x0C;
 
                         do
                         {
-                            uint lstEntryAddress;
-                            if (!Imports.ReadProcessMemory(_hProcess, new IntPtr(pLdrCurrentNode), out lstEntryAddress, out dwBytesRead))
+                            if (!Imports.ReadProcessMemory(_hProcess, new IntPtr(pLdrCurrentNode), out uint lstEntryAddress, out dwBytesRead))
                             {
                                 Imports.HeapFree(hHeap, 0, pbi.Address);
                             }
                             pLdrCurrentNode = lstEntryAddress;
 
-                            UNICODE_STRING baseDllName;
-                            Imports.ReadProcessMemory(_hProcess, new IntPtr(lstEntryAddress) + /*BaseDllName*/ 0x2C, out baseDllName, out dwBytesRead);
+                            Imports.ReadProcessMemory(_hProcess, new IntPtr(lstEntryAddress) + /*BaseDllName*/ 0x2C, out UNICODE_STRING baseDllName, out dwBytesRead);
 
                             var strBaseDllName = string.Empty;
 
@@ -201,11 +194,8 @@ namespace ManualMapInjection.Injection
                                 strBaseDllName = Encoding.Unicode.GetString(buffer);
                             }
 
-                            uint dllBase;
-                            uint sizeOfImage;
-
-                            Imports.ReadProcessMemory(_hProcess, new IntPtr(lstEntryAddress) + /*DllBase*/ 0x18, out dllBase, out dwBytesRead);
-                            Imports.ReadProcessMemory(_hProcess, new IntPtr(lstEntryAddress) + /*SizeOfImage*/ 0x20, out sizeOfImage, out dwBytesRead);
+                            Imports.ReadProcessMemory(_hProcess, new IntPtr(lstEntryAddress) + /*DllBase*/ 0x18, out uint dllBase, out dwBytesRead);
+                            Imports.ReadProcessMemory(_hProcess, new IntPtr(lstEntryAddress) + /*SizeOfImage*/ 0x20, out uint sizeOfImage, out dwBytesRead);
 
                             if (dllBase != 0 && sizeOfImage != 0)
                             {
@@ -232,18 +222,15 @@ namespace ManualMapInjection.Injection
         private IntPtr GetDependencyProcAddressA(IntPtr moduleBase, PCHAR procName)
         {
             IntPtr pFunc = IntPtr.Zero;
-            IMAGE_DOS_HEADER hdrDos;
-            IMAGE_NT_HEADERS32 hdrNt32;
 
-            UIntPtr dwRead;
-            Imports.ReadProcessMemory(_hProcess, moduleBase, out hdrDos, out dwRead);
+            Imports.ReadProcessMemory(_hProcess, moduleBase, out IMAGE_DOS_HEADER hdrDos, out UIntPtr dwRead);
 
             if (!hdrDos.isValid)
             {
                 return IntPtr.Zero;
             }
 
-            Imports.ReadProcessMemory(_hProcess, moduleBase + hdrDos.e_lfanew, out hdrNt32, out dwRead);
+            Imports.ReadProcessMemory(_hProcess, moduleBase + hdrDos.e_lfanew, out IMAGE_NT_HEADERS32 hdrNt32, out dwRead);
 
             if (!hdrNt32.isValid)
             {
@@ -660,17 +647,14 @@ namespace ManualMapInjection.Injection
 
         private bool ProcessSection(char[] name, IntPtr baseAddress, IntPtr remoteAddress, ulong rawData, ulong virtualAddress, ulong rawSize, ulong virtualSize, uint protectFlag)
         {
-            UIntPtr lpNumberOfBytesWritten;
-            uint dwOldProtect;
-
             if (
                 !Imports.WriteProcessMemory(_hProcess, new IntPtr(remoteAddress.ToInt64() + (long)virtualAddress), new IntPtr(baseAddress.ToInt64() + (long)rawData),
-                    new IntPtr((long)rawSize), out lpNumberOfBytesWritten))
+                    new IntPtr((long)rawSize), out UIntPtr lpNumberOfBytesWritten))
             {
                 return false;
             }
 
-            if (!Imports.VirtualProtectEx(_hProcess, new IntPtr(remoteAddress.ToInt64() + (long)virtualAddress), new UIntPtr(virtualSize), protectFlag, out dwOldProtect))
+            if (!Imports.VirtualProtectEx(_hProcess, new IntPtr(remoteAddress.ToInt64() + (long)virtualAddress), new UIntPtr(virtualSize), protectFlag, out uint dwOldProtect))
             {
                 return false;
             }
@@ -692,7 +676,7 @@ namespace ManualMapInjection.Injection
             var imageSectionHeader = (PIMAGE_SECTION_HEADER)(imageNtHeaders.Address + /*OptionalHeader*/ 24 + imageNtHeaders.Value.FileHeader.SizeOfOptionalHeader);
             for (ushort i = 0; i < imageNtHeaders.Value.FileHeader.NumberOfSections; i++)
             {
-                if (Helpers._stricmp(".reloc".ToCharArray(), imageSectionHeader[i].Name))
+                if (Helpers.Stricmp(".reloc".ToCharArray(), imageSectionHeader[i].Name))
                 {
                     continue;
                 }
@@ -720,8 +704,7 @@ namespace ManualMapInjection.Injection
                 return false;
             }
 
-            UIntPtr bytesWritten;
-            var result = Imports.WriteProcessMemory(_hProcess, lpAddress, threadData, threadData.Length, out bytesWritten);
+            var result = Imports.WriteProcessMemory(_hProcess, lpAddress, threadData, threadData.Length, out UIntPtr bytesWritten);
 
             if (result)
             {
@@ -771,7 +754,6 @@ namespace ManualMapInjection.Injection
 
         private bool ProcessTlsEntries(IntPtr baseAddress, IntPtr remoteAddress)
         {
-            UIntPtr dwRead;
             var imageNtHeaders = GetNtHeader(baseAddress);
 
             if (imageNtHeaders == null)
@@ -797,7 +779,7 @@ namespace ManualMapInjection.Injection
             }
 
             var buffer = new byte[0xFF * 4];
-            if (!Imports.ReadProcessMemory(_hProcess, new IntPtr(tlsDirectory.Value.AddressOfCallBacks), buffer, out dwRead))
+            if (!Imports.ReadProcessMemory(_hProcess, new IntPtr(tlsDirectory.Value.AddressOfCallBacks), buffer, out UIntPtr dwRead))
             {
                 return false;
             }
@@ -1014,7 +996,15 @@ namespace ManualMapInjection.Injection
                 // inject
                 result = LoadImageToMemory(handle.AddrOfPinnedObject());
             }
+#if DEBUG
+#else
+#pragma warning disable CS0168 // Переменная объявлена, но не используется
+#endif
             catch (Exception e)
+#if DEBUG
+#else
+#pragma warning restore CS0168 // Переменная объявлена, но не используется
+#endif
             {
 #if DEBUG
                 Debug.WriteLine($"Unexpected error {e}");
@@ -1035,7 +1025,7 @@ namespace ManualMapInjection.Injection
             return Inject(File.ReadAllBytes(file));
         }
 
-        #endregion
+#endregion
 
         public ManualMapInjector(Process p)
         {

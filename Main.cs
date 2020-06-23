@@ -4,6 +4,7 @@ using MetroFramework.Forms;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -51,7 +52,7 @@ namespace Injector
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 //openFileDialog.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-                openFileDialog.Filter = "DLL files (*.dll)|*.dll";
+                openFileDialog.Filter = Properties.Resources.OpenFileFilter;
                 openFileDialog.FilterIndex = 2;
                 openFileDialog.RestoreDirectory = true;
 
@@ -60,11 +61,11 @@ namespace Injector
                     x32 = UnmanagedDllIs64Bit(openFileDialog.FileName);
 
                     if (x32 == null)
-                        archDll = MetroMessageBox.Show(this, "Your dll is broken, or someting  else, do you want to continue?", "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
+                        archDll = MetroMessageBox.Show(this, Properties.Resources.DllBroken, "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
                     if (archDll == DialogResult.Yes | archDll == DialogResult.None)
                     {
                         DllPathTextBox.Text = openFileDialog.FileName;
-                        SelectedDllLabel.Text = "DLL: " + openFileDialog.SafeFileName + ((bool)x32 ? " (x64)" : " (x32)");
+                        SelectedDllLabel.Text = Properties.Resources.DllLabel + openFileDialog.SafeFileName + ((bool)x32 ? " (x64)" : " (x32)");
                     }
                 }
             }
@@ -77,23 +78,23 @@ namespace Injector
                 LoadingSpinRun(true);
                 SwitchUI(true);
                 var injector = new ManualMapInjector(Process.GetProcessById(SelectedProcessId)) { AsyncInjection = true };
-                MetroMessageBox.Show(this, "Inject result:" + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
+                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
                 LoadingSpinRun(false);
                 SwitchUI(false);
             }
             else if (ProcessList.SelectedItem == null)
-                MetroMessageBox.Show(this, "SELCET PROCESS FIRST", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+                MetroMessageBox.Show(this, Properties.Resources.SelProcFirst, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
             else if (x64)
-                MetroMessageBox.Show(this, "ONLY x32 PROCESSES", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
             else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text))
-                MetroMessageBox.Show(this, "INCORRECT DLL PATH", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+                MetroMessageBox.Show(this, Properties.Resources.IncDllPath, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
             else if (x32 == true)
-                MetroMessageBox.Show(this, "ONLY x32 DLL'S", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
         private void VACBypassLabel_Click(object sender, EventArgs e)
         {
-            DialogResult vac = MetroMessageBox.Show(this, "Do you want start VAC-Bypass?", "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
+            DialogResult vac = MetroMessageBox.Show(this, Properties.Resources.VACquestion, "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
             if (vac == DialogResult.Yes)
             {
                 LoadingSpinRun(true);
@@ -113,18 +114,18 @@ namespace Injector
                     x32 = UnmanagedDllIs64Bit(DllPathTextBox.Text);
 
                     if (x32 != null)
-                        SelectedDllLabel.Text = "DLL: " + Path.GetFileName(DllPathTextBox.Text) + ((bool)x32 ? " (x64)" : " (x32)");
+                        SelectedDllLabel.Text = Properties.Resources.DllLabel + Path.GetFileName(DllPathTextBox.Text) + ((bool)x32 ? " (x64)" : " (x32)");
                 }
                 else
-                    SelectedDllLabel.Text = "DLL: ";
+                    SelectedDllLabel.Text = Properties.Resources.DllLabel;
             }
             else
-                SelectedDllLabel.Text = "DLL: ";
+                SelectedDllLabel.Text = Properties.Resources.DllLabel;
         }
 
         private void ProcessList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2));
+            SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2), new CultureInfo("en-US"));
             if (Process.GetProcesses().Any(x => x.Id == SelectedProcessId))
             {
                 try
@@ -141,31 +142,31 @@ namespace Injector
                         throw;
                     }
                 }
-                SelectedProcLabel.Text = "Process: " + Process.GetProcessById(SelectedProcessId).ProcessName + ".exe" + (x64 ? " (x64)" : " (x32)");
-                SelectedPidLabel.Text = "PID: " + SelectedProcessId;
+                SelectedProcLabel.Text = Properties.Resources.ProcessLabel + Process.GetProcessById(SelectedProcessId).ProcessName + ".exe" + (x64 ? " (x64)" : " (x32)");
+                SelectedPidLabel.Text = Properties.Resources.PidLabel + SelectedProcessId;
             }
             else
-                MetroMessageBox.Show(this, "Please refresh list", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+                MetroMessageBox.Show(this, Properties.Resources.RefreshList, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
         private void GitHubLink_Click(object sender, EventArgs e)
         {
-            Process.Start("https://github.com/playday3008");
+            Process.Start(Properties.Resources.GitHubLink);
         }
 
         private void MySiteLink_Click(object sender, EventArgs e)
         {
-            Process.Start("https://wind0wn.xyz/");
+            Process.Start(Properties.Resources.MySiteLink);
         }
 
         private void GitHubLink_MouseHover(object sender, EventArgs e)
         {
-            toolTip.SetToolTip(GitHubLink, "https://github.com/playday3008");// show tooltip with some text
+            toolTip.SetToolTip(GitHubLink, Properties.Resources.GitHubLink);// show tooltip with some text
         }
 
         private void MySiteLink_MouseHover(object sender, EventArgs e)
         {
-            toolTip.SetToolTip(MySiteLink, "https://wind0wn.xyz/");// show tooltip with some text
+            toolTip.SetToolTip(MySiteLink, Properties.Resources.MySiteLink);// show tooltip with some text
         }
 
         #region Functions
@@ -208,7 +209,7 @@ namespace Injector
                 connection.Arguments = "/renew"; // or /release if you want to disconnect
                 Process o = Process.Start(connection);
                 o.WaitForExit();
-            });
+            }).ConfigureAwait(false);
         }
 
         private void LoadingSpinRun(bool spinRun)
@@ -236,7 +237,7 @@ namespace Injector
             bool max = false, min = false;
             while (spin)
             {
-                await Task.Run(() => Thread.Sleep(10));
+                await Task.Run(() => Thread.Sleep(10)).ConfigureAwait(false);
                 if (metroProgressSpinner1.Value == 80)
                     max = true;
                 if (metroProgressSpinner1.Value == 0)
@@ -307,7 +308,7 @@ namespace Injector
             fs.Seek(peOffset, SeekOrigin.Begin);
             UInt32 peHead = br.ReadUInt32();
             if (peHead != 0x00004550) // "PE\0\0", little-endian
-                throw new Exception("Can't find PE header");
+                throw new Exception(Properties.Resources.GetDllArchErr);
             MachineType machineType = (MachineType)br.ReadUInt16();
             br.Close();
             fs.Close();
