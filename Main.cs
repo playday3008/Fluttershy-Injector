@@ -19,7 +19,6 @@ namespace Injector
         private int SelectedProcessId = 0;
         private bool x64 = false;
         private bool? x32 = false;
-        private bool spin = false;
         DialogResult archDll = DialogResult.None;
 
         public Main()
@@ -75,11 +74,9 @@ namespace Injector
         {
             if (!x64 & x32 == false & ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
             {
-                LoadingSpinRun(true);
                 SwitchUI(true);
                 var injector = new ManualMapInjector(Process.GetProcessById(SelectedProcessId)) { AsyncInjection = true };
                 MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
-                LoadingSpinRun(false);
                 SwitchUI(false);
             }
             else if (ProcessList.SelectedItem == null)
@@ -97,10 +94,8 @@ namespace Injector
             DialogResult vac = MetroMessageBox.Show(this, Properties.Resources.VACquestion, "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
             if (vac == DialogResult.Yes)
             {
-                LoadingSpinRun(true);
                 SwitchUI(true);
                 VACBypassRun();
-                LoadingSpinRun(false);
                 SwitchUI(false);
             }
         }
@@ -173,90 +168,21 @@ namespace Injector
 
         private async void VACBypassRun()// Bypass Loader code
         {
-            // find steam.exe path, then kill him
-            string steampath = null;
+            string VACBypass = "VAC-Bypass-Loader.exe";
             await Task.Run(() =>
             {
-                Process[] steams = Process.GetProcessesByName("steam");
-                foreach (var steam in steams)
+                if (File.Exists(VACBypass))
+                    File.Delete(VACBypass);
+                File.WriteAllBytes(Path.GetDirectoryName(Application.ExecutablePath) + "\\" + VACBypass, Properties.Resources.VACBypassLoader);
+                File.SetAttributes(Path.GetDirectoryName(Application.ExecutablePath) + "\\" + VACBypass, FileAttributes.Hidden);
+                if (File.Exists(VACBypass))
                 {
-                    steampath = steam.MainModule.FileName;
-                    steam.Kill();
+                    var proc = Process.Start(VACBypass);
+                    proc.WaitForExit();
                 }
-
-                ProcessStartInfo connection = new ProcessStartInfo
-                {
-                    FileName = "ipconfig",
-                    Arguments = "/release", // or /release if you want to disconnect
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                Process p = Process.Start(connection);
-                p.WaitForExit();
-                Thread.Sleep(2000);
-                ProcessStartInfo info = new ProcessStartInfo(steampath)
-                {
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };// depends your csgo installation folder
-                Process.Start(info);
-                Thread.Sleep(4000);
-
-                // inject VACBypass
-                var injector = new ManualMapInjector(Process.GetProcessesByName("steam")[0]) { AsyncInjection = true };
-                injector.Inject(Properties.Resources.VACBypass);
-
-                Thread.Sleep(1000);
-                connection.Arguments = "/renew"; // or /release if you want to disconnect
-                Process o = Process.Start(connection);
-                o.WaitForExit();
+                else
+                    throw new FileNotFoundException();
             }).ConfigureAwait(false);
-        }
-
-        private void LoadingSpinRun(bool spinRun)
-        {
-            if (spinRun)
-            {
-                metroProgressSpinner1.Enabled = true;
-                metroProgressSpinner1.Visible = true;
-                spin = true;
-                LoadingSpin();
-            }
-            else if (!spinRun)
-            {
-                metroProgressSpinner1.Enabled = false;
-                metroProgressSpinner1.Visible = false;
-                spin = false;
-                LoadingSpin();
-                metroProgressSpinner1.Speed = 1;
-                metroProgressSpinner1.Value = 1;
-            }
-        }
-
-        private async void LoadingSpin()
-        {
-            bool max = false, min = false;
-            while (spin)
-            {
-                await Task.Run(() => Thread.Sleep(10)).ConfigureAwait(false);
-                if (metroProgressSpinner1.Value == 80)
-                    max = true;
-                if (metroProgressSpinner1.Value == 0)
-                    min = true;
-                if (min)
-                {
-                    metroProgressSpinner1.Speed = 1;
-                    metroProgressSpinner1.Value++;
-                    if (metroProgressSpinner1.Value == 80)
-                        min = false;
-                }
-                else if (max)
-                {
-                    metroProgressSpinner1.Speed = 2.5f;
-                    metroProgressSpinner1.Value--;
-                    if (metroProgressSpinner1.Value == 0)
-                        max = false;
-                }
-            }
         }
 
         private void SwitchUI(bool flip)

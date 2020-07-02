@@ -105,7 +105,7 @@
     <None Include="Properties\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Properties\VAC-Bypass.dll" />
+    <Content Include="Properties\VAC-Bypass-Loader.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

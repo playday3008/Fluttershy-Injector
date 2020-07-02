@@ -163,8 +163,8 @@
   <data name="SelProcFirst" xml:space="preserve">
     <value>SELCET PROCESS FIRST</value>
   </data>
-  <data name="VACBypass" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>VAC-Bypass.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="VACBypassLoader" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>VAC-Bypass-Loader.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="VACquestion" xml:space="preserve">
     <value>Do you want start VAC-Bypass?</value>

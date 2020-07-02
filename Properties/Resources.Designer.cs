@@ -199,9 +199,9 @@ namespace Injector.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
-        internal static byte[] VACBypass {
+        internal static byte[] VACBypassLoader {
             get {
-                object obj = ResourceManager.GetObject("VACBypass", resourceCulture);
+                object obj = ResourceManager.GetObject("VACBypassLoader", resourceCulture);
                 return ((byte[])(obj));
             }
         }
