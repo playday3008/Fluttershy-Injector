@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -60,6 +62,17 @@
     <Compile Include="Credits.Designer.cs">
       <DependentUpon>Credits.cs</DependentUpon>
     </Compile>
+    <Compile Include="DllInjectorMarcin\DLLInjectionFailedException.cs" />
+    <Compile Include="DllInjectorMarcin\DLLInjector.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionMethod.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionOptions.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionStrategies\CreateRemoteThreadInjectionStrategy.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionStrategies\IInjectionStrategy.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionStrategies\InjectionStrategyFactory.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionStrategies\LoadLibraryInjectionStrategyBase.cs" />
+    <Compile Include="DllInjectorMarcin\InjectionStrategies\NtCreateThreadExInjectionStrategy.cs" />
+    <Compile Include="DllInjectorMarcin\NativeMethods.cs" />
+    <Compile Include="DllInjectorMarcin\Utils.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>

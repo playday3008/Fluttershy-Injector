@@ -1,10 +1,10 @@
-﻿using ManualMapInjection.Injection;
+﻿using DLLInjectionMarcin;
+using ManualMapInjection.Injection;
 using MetroFramework;
 using MetroFramework.Forms;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -27,7 +27,7 @@ namespace Injector
         private class Inflame32
         {
             [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
-            #pragma warning disable IDE1006 // Стили именования
+#pragma warning disable IDE1006 // Стили именования
             public static extern void manualMap(char[] dllName, int PID);
         }
 
@@ -35,7 +35,7 @@ namespace Injector
         {
             [DllImport("I64.dll", CallingConvention = CallingConvention.Cdecl)]
             public static extern void manualMap(char[] dllName, int PID);
-            #pragma warning restore IDE1006 // Стили именования
+#pragma warning restore IDE1006 // Стили именования
         }
         #endregion
 
@@ -98,6 +98,16 @@ namespace Injector
                     ManualMapCSx32(SelectedProcessId, DllPathTextBox.Text);
                 else if (InjectMethodCB.SelectedIndex == 1)
                     Inflame(SelectedProcessId, DllPathTextBox.Text);
+                else if (InjectMethodCB.SelectedIndex == 2)
+                {
+                    BypassLLIRun(SelectedProcessId);
+                    DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.CREATE_REMOTE_THREAD);
+                }
+                else if (InjectMethodCB.SelectedIndex == 3)
+                {
+                    BypassLLIRun(SelectedProcessId);
+                    DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.NT_CREATE_THREAD_EX);
+                }
                 SwitchUI(false);
                 RefreshButton_Click(null, EventArgs.Empty);
             }
@@ -220,23 +230,39 @@ namespace Injector
 
         }
 
+        private async void DllInjectorMarcin(int pid, string dllPath, InjectionMethod injectionMethod)
+        {
+            try
+            {
+                var injector = new DLLInjector(injectionMethod);
+                await Task.Run(() => injector.Inject(pid, dllPath));
+            }
+            catch (Exception ex)
+            {
+                MetroMessageBox.Show(this, ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error, 150);
+            }
+        }
+
         #endregion
 
         #region Functions
 
         private async void BypassLLIRun(int pid)
         {
-            await Task.Run(() =>
+            if (Path.GetFileName(Process.GetProcessById(pid).MainModule.FileName) == "csgo.exe")
             {
-                if (File.Exists("BLLI.dll"))
-                    File.Delete("BLLI.dll");
-                File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
-                if (File.Exists("BLLI.dll"))
+                await Task.Run(() =>
                 {
-                    File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
-                    BypassLLI(pid);
-                }
-            }).ConfigureAwait(false);
+                    if (File.Exists("BLLI.dll"))
+                        File.Delete("BLLI.dll");
+                    File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
+                    if (File.Exists("BLLI.dll"))
+                    {
+                        File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
+                        BypassLLI(pid);
+                    }
+                }).ConfigureAwait(false);
+            }
         }
 
         private async void VACBypassRun()// Bypass Loader code

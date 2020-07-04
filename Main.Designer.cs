@@ -249,7 +249,9 @@
             this.InjectMethodCB.ItemHeight = 23;
             this.InjectMethodCB.Items.AddRange(new object[] {
             "ManualMap (C#) (x32 only)",
-            "ManualMap (Inflame) (x32/x64)"});
+            "ManualMap (Inflame) (x32/x64)",
+            "LoadLibraryA (C#) (x32/x64)",
+            "NtCreateThreadEx (C#) (x32/x64)"});
             this.InjectMethodCB.Location = new System.Drawing.Point(19, 232);
             this.InjectMethodCB.Name = "InjectMethodCB";
             this.InjectMethodCB.Size = new System.Drawing.Size(171, 29);

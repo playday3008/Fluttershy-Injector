@@ -61,7 +61,7 @@
             this.metroLink1.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.metroLink1.UseSelectable = true;
             this.metroLink1.UseStyleColors = true;
-            this.metroLink1.Click += new System.EventHandler(this.metroLink1_Click);
+            this.metroLink1.Click += new System.EventHandler(this.MetroLink1_Click);
             // 
             // metroLink2
             // 
@@ -75,7 +75,7 @@
             this.metroLink2.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.metroLink2.UseSelectable = true;
             this.metroLink2.UseStyleColors = true;
-            this.metroLink2.Click += new System.EventHandler(this.metroLink2_Click);
+            this.metroLink2.Click += new System.EventHandler(this.MetroLink2_Click);
             // 
             // metroLabel2
             // 
@@ -89,7 +89,7 @@
             this.metroLabel2.Text = "Inflame by Daniel Krupiński:\r\nhttps://github.com/danielkrupinski (GitHub)";
             this.metroLabel2.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.metroLabel2.UseStyleColors = true;
-            this.metroLabel2.Click += new System.EventHandler(this.metroLabel2_Click);
+            this.metroLabel2.Click += new System.EventHandler(this.MetroLabel2_Click);
             // 
             // metroLabel3
             // 
@@ -103,7 +103,7 @@
             this.metroLabel3.Text = "x86 C# injection by Tyson (ThaisenPM):\r\nhttps://github.com/ThaisenPM";
             this.metroLabel3.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.metroLabel3.UseStyleColors = true;
-            this.metroLabel3.Click += new System.EventHandler(this.metroLabel3_Click);
+            this.metroLabel3.Click += new System.EventHandler(this.MetroLabel3_Click);
             // 
             // Credits
             // 
