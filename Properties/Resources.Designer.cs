@@ -214,5 +214,14 @@ namespace Injector.Properties {
                 return ResourceManager.GetString("VACquestion", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на VBL.exe.
+        /// </summary>
+        internal static string VBLfile {
+            get {
+                return ResourceManager.GetString("VBLfile", resourceCulture);
+            }
+        }
     }
 }

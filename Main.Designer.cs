@@ -42,7 +42,6 @@
             this.SelectedDllLabel = new MetroFramework.Controls.MetroLabel();
             this.InjectButton = new MetroFramework.Controls.MetroButton();
             this.VACBypassLabel = new MetroFramework.Controls.MetroLabel();
-            this.metroProgressSpinner1 = new MetroFramework.Controls.MetroProgressSpinner();
             this.GitHubLink = new MetroFramework.Controls.MetroLink();
             this.MySiteLink = new MetroFramework.Controls.MetroLink();
             this.toolTip = new MetroFramework.Components.MetroToolTip();
@@ -250,20 +249,6 @@
             this.VACBypassLabel.UseStyleColors = true;
             this.VACBypassLabel.Click += new System.EventHandler(this.VACBypassLabel_Click);
             // 
-            // metroProgressSpinner1
-            // 
-            this.metroProgressSpinner1.Enabled = false;
-            this.metroProgressSpinner1.Location = new System.Drawing.Point(158, 229);
-            this.metroProgressSpinner1.Maximum = 100;
-            this.metroProgressSpinner1.Name = "metroProgressSpinner1";
-            this.metroProgressSpinner1.Size = new System.Drawing.Size(32, 32);
-            this.metroProgressSpinner1.Style = MetroFramework.MetroColorStyle.Purple;
-            this.metroProgressSpinner1.TabIndex = 13;
-            this.metroProgressSpinner1.Theme = MetroFramework.MetroThemeStyle.Dark;
-            this.metroProgressSpinner1.UseSelectable = true;
-            this.metroProgressSpinner1.UseStyleColors = true;
-            this.metroProgressSpinner1.Visible = false;
-            // 
             // GitHubLink
             // 
             this.GitHubLink.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -308,7 +293,6 @@
             this.ClientSize = new System.Drawing.Size(400, 284);
             this.Controls.Add(this.MySiteLink);
             this.Controls.Add(this.GitHubLink);
-            this.Controls.Add(this.metroProgressSpinner1);
             this.Controls.Add(this.VACBypassLabel);
             this.Controls.Add(this.InjectButton);
             this.Controls.Add(this.SelectedDllLabel);
@@ -349,7 +333,6 @@
         private MetroFramework.Controls.MetroLabel SelectedDllLabel;
         private MetroFramework.Controls.MetroButton InjectButton;
         private MetroFramework.Controls.MetroLabel VACBypassLabel;
-        private MetroFramework.Controls.MetroProgressSpinner metroProgressSpinner1;
         private MetroFramework.Controls.MetroLink GitHubLink;
         private MetroFramework.Controls.MetroLink MySiteLink;
         private MetroFramework.Components.MetroToolTip toolTip;

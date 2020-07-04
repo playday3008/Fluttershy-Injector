@@ -169,4 +169,7 @@
   <data name="VACquestion" xml:space="preserve">
     <value>Do you want start VAC-Bypass?</value>
   </data>
+  <data name="VBLfile" xml:space="preserve">
+    <value>VBL.exe</value>
+  </data>
 </root>

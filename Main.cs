@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -168,26 +167,29 @@ namespace Injector
 
         private async void VACBypassRun()// Bypass Loader code
         {
-            string VACBypass = "VAC-Bypass-Loader.exe";
+            string VACBypass = Path.GetDirectoryName(Application.ExecutablePath) + "\\" + Properties.Resources.VBLfile;
             await Task.Run(() =>
             {
                 if (File.Exists(VACBypass))
                     File.Delete(VACBypass);
-                File.WriteAllBytes(Path.GetDirectoryName(Application.ExecutablePath) + "\\" + VACBypass, Properties.Resources.VACBypassLoader);
-                File.SetAttributes(Path.GetDirectoryName(Application.ExecutablePath) + "\\" + VACBypass, FileAttributes.Hidden);
+                File.WriteAllBytes(VACBypass, Properties.Resources.VACBypassLoader);
                 if (File.Exists(VACBypass))
                 {
+                    File.SetAttributes(VACBypass, FileAttributes.Hidden);
+                    File.SetAttributes(VACBypass, FileAttributes.ReadOnly);
+                    File.SetAttributes(VACBypass, FileAttributes.Temporary);
                     var proc = Process.Start(VACBypass);
                     proc.WaitForExit();
+                    File.Delete(VACBypass);
                 }
                 else
-                    throw new FileNotFoundException();
+                    throw new FileNotFoundException("Can't load VACBypass module, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
             }).ConfigureAwait(false);
         }
 
-        private void SwitchUI(bool flip)
+        private void SwitchUI(bool sw)
         {
-            if (flip)
+            if (sw)
             {
                 InjectButton.Enabled = false;
                 ProcessList.Enabled = false;
@@ -195,7 +197,7 @@ namespace Injector
                 RefreshButton.Enabled = false;
                 DllPathTextBox.Enabled = false;
             }
-            else if (!flip)
+            else if (!sw)
             {
                 InjectButton.Enabled = true;
                 ProcessList.Enabled = true;

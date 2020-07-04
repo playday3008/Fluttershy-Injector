@@ -1025,7 +1025,7 @@ namespace ManualMapInjection.Injection
             return Inject(File.ReadAllBytes(file));
         }
 
-#endregion
+        #endregion
 
         public ManualMapInjector(Process p)
         {
