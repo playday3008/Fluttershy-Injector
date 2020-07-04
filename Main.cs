@@ -103,13 +103,7 @@ namespace Injector
                     BypassLLIRun(SelectedProcessId);
                     DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.CREATE_REMOTE_THREAD);
                 }
-                else if (InjectMethodCB.SelectedIndex == 3)
-                {
-                    BypassLLIRun(SelectedProcessId);
-                    DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.NT_CREATE_THREAD_EX);
-                }
                 SwitchUI(false);
-                RefreshButton_Click(null, EventArgs.Empty);
             }
             else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text))
                 MetroMessageBox.Show(this, Properties.Resources.IncDllPath, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
