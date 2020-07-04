@@ -20,14 +20,31 @@ namespace Injector
         private bool? x32 = false;
         DialogResult archDll = DialogResult.None;
 
+        #region DllImport
         [DllImport("BLLI.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BypassLLI(int pid);
+
+        private class Inflame32
+        {
+            [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
+            #pragma warning disable IDE1006 // Стили именования
+            public static extern void manualMap(char[] dllName, int PID);
+        }
+
+        private class Inflame64
+        {
+            [DllImport("I64.dll", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void manualMap(char[] dllName, int PID);
+            #pragma warning restore IDE1006 // Стили именования
+        }
+        #endregion
 
         public Main()
         {
             InitializeComponent();
 
             RefreshButton_Click(null, EventArgs.Empty);
+            InjectMethodCB.SelectedIndex = 0;
         }
 
         private void RefreshButton_Click(object sender, EventArgs e)
@@ -77,7 +94,10 @@ namespace Injector
             if (ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
             {
                 SwitchUI(true);
-                ManualMapCSx32(SelectedProcessId, DllPathTextBox.Text);
+                if (InjectMethodCB.SelectedIndex == 0)
+                    ManualMapCSx32(SelectedProcessId, DllPathTextBox.Text);
+                else if (InjectMethodCB.SelectedIndex == 1)
+                    Inflame(SelectedProcessId, DllPathTextBox.Text);
                 SwitchUI(false);
             }
             else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text))
@@ -141,26 +161,6 @@ namespace Injector
                 MetroMessageBox.Show(this, Properties.Resources.RefreshList, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
-        private void GitHubLink_Click(object sender, EventArgs e)
-        {
-            Process.Start(Properties.Resources.GitHubLink);
-        }
-
-        private void MySiteLink_Click(object sender, EventArgs e)
-        {
-            Process.Start(Properties.Resources.MySiteLink);
-        }
-
-        private void GitHubLink_MouseHover(object sender, EventArgs e)
-        {
-            toolTip.SetToolTip(GitHubLink, Properties.Resources.GitHubLink);// show tooltip with some text
-        }
-
-        private void MySiteLink_MouseHover(object sender, EventArgs e)
-        {
-            toolTip.SetToolTip(MySiteLink, Properties.Resources.MySiteLink);// show tooltip with some text
-        }
-
         #region Injection Methods
 
         private void ManualMapCSx32(int pid, string dllPath)
@@ -174,6 +174,44 @@ namespace Injector
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
             else if (x32 == true)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+        }
+
+        private async void Inflame(int pid, string dllPath)
+        {
+            string dll = Path.GetFileName(dllPath);
+            File.Copy(dllPath, Path.GetDirectoryName(Application.ExecutablePath) + "\\" + dll, true);
+            File.SetAttributes(dll, FileAttributes.Hidden);
+            if (x64 & x32 == true)
+            {
+                if (File.Exists("I64.dll"))
+                    File.Delete("I64.dll");
+                File.WriteAllBytes("I64.dll", Properties.Resources.Inflame64);
+                if (File.Exists("I64.dll"))
+                {
+                    File.SetAttributes("I64.dll", FileAttributes.Hidden);
+                    await Task.Run(() => Inflame64.manualMap(dll.ToCharArray(), pid));
+                }
+                else
+                    throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
+            }
+            else if (!x64 & x32 == false)
+            {
+                if (File.Exists("I.dll"))
+                    File.Delete("I.dll");
+                File.WriteAllBytes("I.dll", Properties.Resources.Inflame);
+                if (File.Exists("I.dll"))
+                {
+                    File.SetAttributes("I.dll", FileAttributes.Hidden);
+                    await Task.Run(() => Inflame32.manualMap(dll.ToCharArray(), pid));
+                }
+                else
+                    throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
+            }
+            else if (x64 & x32 == false)
+                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (!x64 & x32 == true)
+                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+
         }
 
         #endregion
@@ -226,6 +264,7 @@ namespace Injector
                 OpenFileButton.Enabled = false;
                 RefreshButton.Enabled = false;
                 DllPathTextBox.Enabled = false;
+                InjectMethodCB.Enabled = false;
             }
             else if (!sw)
             {
@@ -234,6 +273,7 @@ namespace Injector
                 OpenFileButton.Enabled = true;
                 RefreshButton.Enabled = true;
                 DllPathTextBox.Enabled = true;
+                InjectMethodCB.Enabled = false;
             }
         }
 

@@ -34,7 +34,6 @@
             this.RefreshButton = new MetroFramework.Controls.MetroButton();
             this.SelectedProcLabel = new MetroFramework.Controls.MetroLabel();
             this.SelectedPidLabel = new MetroFramework.Controls.MetroLabel();
-            this.Label3 = new MetroFramework.Controls.MetroLabel();
             this.metroTile1 = new MetroFramework.Controls.MetroTile();
             this.Label2 = new MetroFramework.Controls.MetroLabel();
             this.DllPathTextBox = new MetroFramework.Controls.MetroTextBox();
@@ -42,9 +41,8 @@
             this.SelectedDllLabel = new MetroFramework.Controls.MetroLabel();
             this.InjectButton = new MetroFramework.Controls.MetroButton();
             this.VACBypassLabel = new MetroFramework.Controls.MetroLabel();
-            this.GitHubLink = new MetroFramework.Controls.MetroLink();
-            this.MySiteLink = new MetroFramework.Controls.MetroLink();
             this.toolTip = new MetroFramework.Components.MetroToolTip();
+            this.InjectMethodCB = new MetroFramework.Controls.MetroComboBox();
             this.SuspendLayout();
             // 
             // ProcessList
@@ -117,19 +115,6 @@
             this.SelectedPidLabel.Text = "PID: ";
             this.SelectedPidLabel.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.SelectedPidLabel.UseStyleColors = true;
-            // 
-            // Label3
-            // 
-            this.Label3.AutoSize = true;
-            this.Label3.FontWeight = MetroFramework.MetroLabelWeight.Bold;
-            this.Label3.Location = new System.Drawing.Point(301, 26);
-            this.Label3.Name = "Label3";
-            this.Label3.Size = new System.Drawing.Size(76, 19);
-            this.Label3.Style = MetroFramework.MetroColorStyle.Purple;
-            this.Label3.TabIndex = 5;
-            this.Label3.Text = "(x32 only)";
-            this.Label3.Theme = MetroFramework.MetroThemeStyle.Dark;
-            this.Label3.UseStyleColors = true;
             // 
             // metroTile1
             // 
@@ -223,9 +208,9 @@
             // 
             this.InjectButton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.InjectButton.FontSize = MetroFramework.MetroButtonSize.Medium;
-            this.InjectButton.Location = new System.Drawing.Point(296, 229);
+            this.InjectButton.Location = new System.Drawing.Point(296, 232);
             this.InjectButton.Name = "InjectButton";
-            this.InjectButton.Size = new System.Drawing.Size(81, 32);
+            this.InjectButton.Size = new System.Drawing.Size(81, 29);
             this.InjectButton.Style = MetroFramework.MetroColorStyle.Purple;
             this.InjectButton.TabIndex = 11;
             this.InjectButton.Text = "Inject";
@@ -239,7 +224,7 @@
             this.VACBypassLabel.AutoSize = true;
             this.VACBypassLabel.Cursor = System.Windows.Forms.Cursors.Hand;
             this.VACBypassLabel.FontWeight = MetroFramework.MetroLabelWeight.Bold;
-            this.VACBypassLabel.Location = new System.Drawing.Point(196, 235);
+            this.VACBypassLabel.Location = new System.Drawing.Point(196, 237);
             this.VACBypassLabel.Name = "VACBypassLabel";
             this.VACBypassLabel.Size = new System.Drawing.Size(94, 19);
             this.VACBypassLabel.Style = MetroFramework.MetroColorStyle.Purple;
@@ -249,50 +234,34 @@
             this.VACBypassLabel.UseStyleColors = true;
             this.VACBypassLabel.Click += new System.EventHandler(this.VACBypassLabel_Click);
             // 
-            // GitHubLink
-            // 
-            this.GitHubLink.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.GitHubLink.Location = new System.Drawing.Point(23, 238);
-            this.GitHubLink.Name = "GitHubLink";
-            this.GitHubLink.Size = new System.Drawing.Size(71, 23);
-            this.GitHubLink.Style = MetroFramework.MetroColorStyle.Purple;
-            this.GitHubLink.TabIndex = 14;
-            this.GitHubLink.Text = "My GitHub";
-            this.GitHubLink.Theme = MetroFramework.MetroThemeStyle.Dark;
-            this.GitHubLink.UseSelectable = true;
-            this.GitHubLink.UseStyleColors = true;
-            this.GitHubLink.Click += new System.EventHandler(this.GitHubLink_Click);
-            this.GitHubLink.MouseHover += new System.EventHandler(this.GitHubLink_MouseHover);
-            // 
-            // MySiteLink
-            // 
-            this.MySiteLink.AutoSize = true;
-            this.MySiteLink.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.MySiteLink.Location = new System.Drawing.Point(100, 238);
-            this.MySiteLink.Name = "MySiteLink";
-            this.MySiteLink.Size = new System.Drawing.Size(52, 23);
-            this.MySiteLink.Style = MetroFramework.MetroColorStyle.Purple;
-            this.MySiteLink.TabIndex = 15;
-            this.MySiteLink.Text = "My Site";
-            this.MySiteLink.Theme = MetroFramework.MetroThemeStyle.Dark;
-            this.MySiteLink.UseSelectable = true;
-            this.MySiteLink.UseStyleColors = true;
-            this.MySiteLink.Click += new System.EventHandler(this.MySiteLink_Click);
-            this.MySiteLink.MouseHover += new System.EventHandler(this.MySiteLink_MouseHover);
-            // 
             // toolTip
             // 
             this.toolTip.Style = MetroFramework.MetroColorStyle.Blue;
             this.toolTip.StyleManager = null;
             this.toolTip.Theme = MetroFramework.MetroThemeStyle.Light;
             // 
+            // InjectMethodCB
+            // 
+            this.InjectMethodCB.DropDownWidth = 220;
+            this.InjectMethodCB.FormattingEnabled = true;
+            this.InjectMethodCB.ItemHeight = 23;
+            this.InjectMethodCB.Items.AddRange(new object[] {
+            "ManualMap (C#) (x32 only)",
+            "ManualMap (Inflame) (x32/x64)"});
+            this.InjectMethodCB.Location = new System.Drawing.Point(19, 232);
+            this.InjectMethodCB.Name = "InjectMethodCB";
+            this.InjectMethodCB.Size = new System.Drawing.Size(171, 29);
+            this.InjectMethodCB.Style = MetroFramework.MetroColorStyle.Purple;
+            this.InjectMethodCB.TabIndex = 13;
+            this.InjectMethodCB.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.InjectMethodCB.UseSelectable = true;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 284);
-            this.Controls.Add(this.MySiteLink);
-            this.Controls.Add(this.GitHubLink);
+            this.Controls.Add(this.InjectMethodCB);
             this.Controls.Add(this.VACBypassLabel);
             this.Controls.Add(this.InjectButton);
             this.Controls.Add(this.SelectedDllLabel);
@@ -300,7 +269,6 @@
             this.Controls.Add(this.DllPathTextBox);
             this.Controls.Add(this.Label2);
             this.Controls.Add(this.metroTile1);
-            this.Controls.Add(this.Label3);
             this.Controls.Add(this.SelectedPidLabel);
             this.Controls.Add(this.SelectedProcLabel);
             this.Controls.Add(this.RefreshButton);
@@ -325,7 +293,6 @@
         private MetroFramework.Controls.MetroButton RefreshButton;
         private MetroFramework.Controls.MetroLabel SelectedProcLabel;
         private MetroFramework.Controls.MetroLabel SelectedPidLabel;
-        private MetroFramework.Controls.MetroLabel Label3;
         private MetroFramework.Controls.MetroTile metroTile1;
         private MetroFramework.Controls.MetroLabel Label2;
         private MetroFramework.Controls.MetroTextBox DllPathTextBox;
@@ -333,9 +300,8 @@
         private MetroFramework.Controls.MetroLabel SelectedDllLabel;
         private MetroFramework.Controls.MetroButton InjectButton;
         private MetroFramework.Controls.MetroLabel VACBypassLabel;
-        private MetroFramework.Controls.MetroLink GitHubLink;
-        private MetroFramework.Controls.MetroLink MySiteLink;
         private MetroFramework.Components.MetroToolTip toolTip;
+        private MetroFramework.Controls.MetroComboBox InjectMethodCB;
     }
 }
 

@@ -119,7 +119,7 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="BypassLLI" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>BypassLLI.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Bypass\BypassLLI.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="DllBroken" xml:space="preserve">
     <value>Your dll is broken, or someting  else, do you want to continue?</value>
@@ -138,6 +138,12 @@
   </data>
   <data name="IncDllPath" xml:space="preserve">
     <value>INCORRECT DLL PATH</value>
+  </data>
+  <data name="Inflame" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Inflame\Inflame.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Inflame64" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Inflame\Inflame64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="InjResult" xml:space="preserve">
     <value>Inject result:</value>
@@ -167,7 +173,7 @@
     <value>SELCET PROCESS FIRST</value>
   </data>
   <data name="VACBypassLoader" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>VAC-Bypass-Loader.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Bypass\VAC-Bypass-Loader.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="VACquestion" xml:space="preserve">
     <value>Do you want start VAC-Bypass?</value>
