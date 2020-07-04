@@ -74,32 +74,16 @@ namespace Injector
 
         private void InjectButton_Click(object sender, EventArgs e)
         {
-            if (!x64 & x32 == false & ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
+            if (ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
             {
                 SwitchUI(true);
-                /*if (Process.GetProcessById(SelectedProcessId).MainModule.FileName == "csgo.exe")
-                {
-                    if (File.Exists("BLLI.dll"))
-                        File.Delete("BLLI.dll");
-                    File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
-                    if (File.Exists("BLLI.dll"))
-                    {
-                        File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
-                        BypassLLI(SelectedProcessId);
-                    }
-                }*/
-                var injector = new ManualMapInjector(Process.GetProcessById(SelectedProcessId)) { AsyncInjection = true };
-                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
+                ManualMapCSx32(SelectedProcessId, DllPathTextBox.Text);
                 SwitchUI(false);
             }
-            else if (ProcessList.SelectedItem == null)
-                MetroMessageBox.Show(this, Properties.Resources.SelProcFirst, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (x64)
-                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
             else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text))
                 MetroMessageBox.Show(this, Properties.Resources.IncDllPath, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (x32 == true)
-                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (ProcessList.SelectedItem == null)
+                MetroMessageBox.Show(this, Properties.Resources.SelProcFirst, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
         private void VACBypassLabel_Click(object sender, EventArgs e)
@@ -177,7 +161,39 @@ namespace Injector
             toolTip.SetToolTip(MySiteLink, Properties.Resources.MySiteLink);// show tooltip with some text
         }
 
+        #region Injection Methods
+
+        private void ManualMapCSx32(int pid, string dllPath)
+        {
+            if (!x64 & x32 == false)
+            {
+                var injector = new ManualMapInjector(Process.GetProcessById(pid)) { AsyncInjection = true };
+                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
+            }
+            else if (x64)
+                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (x32 == true)
+                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+        }
+
+        #endregion
+
         #region Functions
+
+        private async void BypassLLIRun(int pid)
+        {
+            await Task.Run(() =>
+            {
+                if (File.Exists("BLLI.dll"))
+                    File.Delete("BLLI.dll");
+                File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
+                if (File.Exists("BLLI.dll"))
+                {
+                    File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
+                    BypassLLI(pid);
+                }
+            }).ConfigureAwait(false);
+        }
 
         private async void VACBypassRun()// Bypass Loader code
         {
