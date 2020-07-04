@@ -61,6 +61,16 @@ namespace Injector.Properties {
         }
         
         /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BypassLLI {
+            get {
+                object obj = ResourceManager.GetObject("BypassLLI", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Your dll is broken, or someting  else, do you want to continue?.
         /// </summary>
         internal static string DllBroken {

@@ -20,6 +20,9 @@ namespace Injector
         private bool? x32 = false;
         DialogResult archDll = DialogResult.None;
 
+        [DllImport("BLLI.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BypassLLI(int pid);
+
         public Main()
         {
             InitializeComponent();
@@ -74,6 +77,17 @@ namespace Injector
             if (!x64 & x32 == false & ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
             {
                 SwitchUI(true);
+                /*if (Process.GetProcessById(SelectedProcessId).MainModule.FileName == "csgo.exe")
+                {
+                    if (File.Exists("BLLI.dll"))
+                        File.Delete("BLLI.dll");
+                    File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
+                    if (File.Exists("BLLI.dll"))
+                    {
+                        File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
+                        BypassLLI(SelectedProcessId);
+                    }
+                }*/
                 var injector = new ManualMapInjector(Process.GetProcessById(SelectedProcessId)) { AsyncInjection = true };
                 MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(DllPathTextBox.Text).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
                 SwitchUI(false);
