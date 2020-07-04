@@ -99,6 +99,7 @@ namespace Injector
                 else if (InjectMethodCB.SelectedIndex == 1)
                     Inflame(SelectedProcessId, DllPathTextBox.Text);
                 SwitchUI(false);
+                RefreshButton_Click(null, EventArgs.Empty);
             }
             else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text))
                 MetroMessageBox.Show(this, Properties.Resources.IncDllPath, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
@@ -137,7 +138,7 @@ namespace Injector
 
         private void ProcessList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2), new CultureInfo("en-US"));
+            SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2));
             if (Process.GetProcesses().Any(x => x.Id == SelectedProcessId))
             {
                 try
@@ -161,6 +162,13 @@ namespace Injector
                 MetroMessageBox.Show(this, Properties.Resources.RefreshList, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
+        private void CerditsButton_Click(object sender, EventArgs e)
+        {
+            var creditsForm = new Credits();
+            if (!Application.OpenForms.OfType<Credits>().Any())
+                creditsForm.Show();
+        }
+
         #region Injection Methods
 
         private void ManualMapCSx32(int pid, string dllPath)
@@ -178,14 +186,13 @@ namespace Injector
 
         private async void Inflame(int pid, string dllPath)
         {
-            string dll = Path.GetFileName(dllPath);
-            File.Copy(dllPath, Path.GetDirectoryName(Application.ExecutablePath) + "\\" + dll, true);
+            string dll = Path.GetRandomFileName().Replace(".", "") + ".dll";
+            File.Copy(dllPath, dll, true);
             File.SetAttributes(dll, FileAttributes.Hidden);
             if (x64 & x32 == true)
             {
-                if (File.Exists("I64.dll"))
-                    File.Delete("I64.dll");
-                File.WriteAllBytes("I64.dll", Properties.Resources.Inflame64);
+                if (!File.Exists("I64.dll"))
+                    File.WriteAllBytes("I64.dll", Properties.Resources.Inflame64);
                 if (File.Exists("I64.dll"))
                 {
                     File.SetAttributes("I64.dll", FileAttributes.Hidden);
@@ -196,9 +203,8 @@ namespace Injector
             }
             else if (!x64 & x32 == false)
             {
-                if (File.Exists("I.dll"))
-                    File.Delete("I.dll");
-                File.WriteAllBytes("I.dll", Properties.Resources.Inflame);
+                if (!File.Exists("I.dll"))
+                    File.WriteAllBytes("I.dll", Properties.Resources.Inflame);
                 if (File.Exists("I.dll"))
                 {
                     File.SetAttributes("I.dll", FileAttributes.Hidden);
@@ -273,7 +279,7 @@ namespace Injector
                 OpenFileButton.Enabled = true;
                 RefreshButton.Enabled = true;
                 DllPathTextBox.Enabled = true;
-                InjectMethodCB.Enabled = false;
+                InjectMethodCB.Enabled = true;
             }
         }
 
@@ -351,12 +357,5 @@ namespace Injector
             }
         }
         #endregion
-
-        private void CerditsButton_Click(object sender, EventArgs e)
-        {
-            var creditsForm = new Credits();
-            if (!Application.OpenForms.OfType<Credits>().Any())
-                creditsForm.Show();
-        }
     }
 }
