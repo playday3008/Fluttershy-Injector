@@ -43,6 +43,7 @@
             this.VACBypassLabel = new MetroFramework.Controls.MetroLabel();
             this.toolTip = new MetroFramework.Components.MetroToolTip();
             this.InjectMethodCB = new MetroFramework.Controls.MetroComboBox();
+            this.CerditsButton = new MetroFramework.Controls.MetroButton();
             this.SuspendLayout();
             // 
             // ProcessList
@@ -52,7 +53,7 @@
             this.ProcessList.ItemHeight = 23;
             this.ProcessList.Location = new System.Drawing.Point(23, 82);
             this.ProcessList.Name = "ProcessList";
-            this.ProcessList.Size = new System.Drawing.Size(354, 29);
+            this.ProcessList.Size = new System.Drawing.Size(273, 29);
             this.ProcessList.Sorted = true;
             this.ProcessList.Style = MetroFramework.MetroColorStyle.Purple;
             this.ProcessList.TabIndex = 0;
@@ -77,9 +78,9 @@
             // RefreshButton
             // 
             this.RefreshButton.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.RefreshButton.Location = new System.Drawing.Point(302, 53);
+            this.RefreshButton.Location = new System.Drawing.Point(302, 82);
             this.RefreshButton.Name = "RefreshButton";
-            this.RefreshButton.Size = new System.Drawing.Size(75, 23);
+            this.RefreshButton.Size = new System.Drawing.Size(75, 29);
             this.RefreshButton.Style = MetroFramework.MetroColorStyle.Purple;
             this.RefreshButton.TabIndex = 2;
             this.RefreshButton.Text = "Refresh list";
@@ -242,6 +243,7 @@
             // 
             // InjectMethodCB
             // 
+            this.InjectMethodCB.Cursor = System.Windows.Forms.Cursors.Hand;
             this.InjectMethodCB.DropDownWidth = 220;
             this.InjectMethodCB.FormattingEnabled = true;
             this.InjectMethodCB.ItemHeight = 23;
@@ -256,11 +258,26 @@
             this.InjectMethodCB.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.InjectMethodCB.UseSelectable = true;
             // 
+            // CerditsButton
+            // 
+            this.CerditsButton.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.CerditsButton.Location = new System.Drawing.Point(302, 53);
+            this.CerditsButton.Name = "CerditsButton";
+            this.CerditsButton.Size = new System.Drawing.Size(75, 23);
+            this.CerditsButton.Style = MetroFramework.MetroColorStyle.Purple;
+            this.CerditsButton.TabIndex = 14;
+            this.CerditsButton.Text = "Credits";
+            this.CerditsButton.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.CerditsButton.UseSelectable = true;
+            this.CerditsButton.UseStyleColors = true;
+            this.CerditsButton.Click += new System.EventHandler(this.CerditsButton_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(400, 284);
+            this.Controls.Add(this.CerditsButton);
             this.Controls.Add(this.InjectMethodCB);
             this.Controls.Add(this.VACBypassLabel);
             this.Controls.Add(this.InjectButton);
@@ -302,6 +319,7 @@
         private MetroFramework.Controls.MetroLabel VACBypassLabel;
         private MetroFramework.Components.MetroToolTip toolTip;
         private MetroFramework.Controls.MetroComboBox InjectMethodCB;
+        private MetroFramework.Controls.MetroButton CerditsButton;
     }
 }
 

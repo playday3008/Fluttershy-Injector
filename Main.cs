@@ -351,5 +351,12 @@ namespace Injector
             }
         }
         #endregion
+
+        private void CerditsButton_Click(object sender, EventArgs e)
+        {
+            var creditsForm = new Credits();
+            if (!Application.OpenForms.OfType<Credits>().Any())
+                creditsForm.Show();
+        }
     }
 }
