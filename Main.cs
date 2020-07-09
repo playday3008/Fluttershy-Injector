@@ -24,19 +24,23 @@ namespace Injector
         [DllImport("BLLI.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BypassLLI(int pid);
 
-        private class Inflame32
-        {
-            [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
-#pragma warning disable IDE1006 // Стили именования
-            public static extern void manualMap(char[] dllName, int PID);
-        }
-
+    #if WIN64
         private class Inflame64
         {
             [DllImport("I64.dll", CallingConvention = CallingConvention.Cdecl)]
+            #pragma warning disable IDE1006 // Стили именования
             public static extern void manualMap(char[] dllName, int PID);
-#pragma warning restore IDE1006 // Стили именования
+            #pragma warning restore IDE1006 // Стили именования
         }
+    #else
+        private class Inflame32
+        {
+            [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
+            #pragma warning disable IDE1006 // Стили именования
+            public static extern void manualMap(char[] dllName, int PID);
+            #pragma warning restore IDE1006 // Стили именования
+        }
+    #endif
         #endregion
 
         public Main()
@@ -173,14 +177,14 @@ namespace Injector
                 creditsForm.Show();
         }
 
-        #region Injection Methods
+#region Injection Methods
 
         private void ManualMapCSx32(int pid, string dllPath)
         {
             if (!x64 & x32 == false)
             {
                 var injector = new ManualMapInjector(Process.GetProcessById(pid)) { AsyncInjection = true };
-                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 150);
+                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 160);
             }
             else if (x64)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
@@ -193,33 +197,72 @@ namespace Injector
             string dll = Path.GetRandomFileName().Replace(".", "") + ".dll";
             File.Copy(dllPath, dll, true);
             File.SetAttributes(dll, FileAttributes.Hidden);
+#if WIN64
             if (x64 & x32 == true)
             {
-                if (!File.Exists("I64.dll"))
-                    File.WriteAllBytes("I64.dll", Properties.Resources.Inflame64);
-                if (File.Exists("I64.dll"))
+                bool locked = false;
+                var I64 = new FileInfo("I64.dll");
+                if (IsFileLocked(I64))
+                    locked = true;
+                try
                 {
-                    File.SetAttributes("I64.dll", FileAttributes.Hidden);
+                    await Task.Run(() =>
+                    {
+                        if (!locked)
+                            File.Delete("I64.dll");
+                        if (!File.Exists("I64.dll"))
+                        {
+                            File.WriteAllBytes("I64.dll", Properties.Resources.Inflame64);
+                            File.SetAttributes("I64.dll", FileAttributes.Hidden);
+                            File.SetAttributes("I64.dll", FileAttributes.ReadOnly);
+                            File.SetAttributes("I64.dll", FileAttributes.Temporary);
+                        }
+                        if (File.Exists("I64.dll"))
+                            Inflame64.manualMap(dll.ToCharArray(), pid);
+                        else
+                            throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
+                    });
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException)
+                {
                     await Task.Run(() => Inflame64.manualMap(dll.ToCharArray(), pid));
                 }
-                else
-                    throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
             }
-            else if (!x64 & x32 == false)
+#else
+            if (!x64 & x32 == false)
             {
-                if (!File.Exists("I.dll"))
-                    File.WriteAllBytes("I.dll", Properties.Resources.Inflame);
-                if (File.Exists("I.dll"))
+                bool locked = false;
+                var I = new FileInfo("I.dll");
+                if (IsFileLocked(I))
+                    locked = true;
+                try
                 {
-                    File.SetAttributes("I.dll", FileAttributes.Hidden);
+                    await Task.Run(() =>
+                    {
+                        if (!locked)
+                            File.Delete("I.dll");
+                        if (!File.Exists("I.dll"))
+                        {
+                            File.WriteAllBytes("I.dll", Properties.Resources.Inflame);
+                            File.SetAttributes("I.dll", FileAttributes.Hidden);
+                            File.SetAttributes("I.dll", FileAttributes.ReadOnly);
+                            File.SetAttributes("I.dll", FileAttributes.Temporary);
+                        }
+                        if (File.Exists("I.dll"))
+                            Inflame32.manualMap(dll.ToCharArray(), pid);
+                        else
+                            throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
+                    });
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException)
+                {
                     await Task.Run(() => Inflame32.manualMap(dll.ToCharArray(), pid));
                 }
-                else
-                    throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
             }
-            else if (x64 & x32 == false)
+        #endif
+            else if (x64/* & x32 == false*/)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (!x64 & x32 == true)
+            else if (/*!x64 & */x32 == true)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
 
         }
@@ -240,19 +283,32 @@ namespace Injector
         #endregion
 
         #region Functions
-
         private async void BypassLLIRun(int pid)
         {
             if (Path.GetFileName(Process.GetProcessById(pid).MainModule.FileName) == "csgo.exe")
             {
+                bool locked = false;
                 await Task.Run(() =>
                 {
-                    if (File.Exists("BLLI.dll"))
-                        File.Delete("BLLI.dll");
-                    File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
-                    if (File.Exists("BLLI.dll"))
+                    var BLLI = new FileInfo("BLLI.dll");
+                    if (IsFileLocked(BLLI))
+                        locked = true;
+                    try
                     {
-                        File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
+                        if (!locked)
+                            File.Delete("BLLI.dll");
+                        if (!File.Exists("BLLI.dll"))
+                        {
+                            File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
+                            File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
+                            File.SetAttributes("BLLI.dll", FileAttributes.ReadOnly);
+                            File.SetAttributes("BLLI.dll", FileAttributes.Temporary);
+                        }
+                        if (File.Exists("BLLI.dll"))
+                            BypassLLI(pid);
+                    }
+                    catch (Exception ex) when (ex is UnauthorizedAccessException)
+                    {
                         BypassLLI(pid);
                     }
                 }).ConfigureAwait(false);
@@ -375,6 +431,26 @@ namespace Injector
                 default:
                     return null;
             }
+        }
+
+        protected virtual bool IsFileLocked(FileInfo file)
+        {
+            try
+            {
+                using (FileStream stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                    stream.Close();
+            }
+            catch (Exception ex) when (ex is IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+
+            //file is not locked
+            return false;
         }
         #endregion
     }
