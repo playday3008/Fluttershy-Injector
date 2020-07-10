@@ -9,7 +9,7 @@ namespace DLLInjectionMarcin.InjectionStrategies
         public IntPtr Inject(IntPtr processHandle, string dllPath)
         {
             if (processHandle == IntPtr.Zero)
-                throw new ArgumentException("Invalid process handle", "processHandle");
+                throw new ArgumentException("Invalid process handle", nameof(processHandle));
 
             if (string.IsNullOrWhiteSpace(dllPath))
                 throw new ArgumentException("Invalid dll path", "pathToDll");
@@ -25,13 +25,14 @@ namespace DLLInjectionMarcin.InjectionStrategies
             Utils.CheckForFailure(addressOfDllPath == IntPtr.Zero, "Cannot allocate memory in process");
 
 
-            IntPtr tmp;
             bool success = WinAPI.WriteProcessMemory(
                 processHandle,
                 addressOfDllPath,
                 pathBytes,
                 pathBytes.Length,
-                out tmp);
+                #pragma warning disable IDE0059 // Ненужное присваивание значения
+                out IntPtr tmp);
+                #pragma warning restore IDE0059 // Ненужное присваивание значения
 
             Utils.CheckForFailure(!success, "Cannot write to process memory");
 

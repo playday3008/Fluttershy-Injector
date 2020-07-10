@@ -74,7 +74,9 @@ namespace ManualMapInjection.Injection.Types
 
         private GCHandle _handle;
 
+        #pragma warning disable IDE0044 // Добавить модификатор только для чтения
         private bool _freeHandle;
+        #pragma warning restore IDE0044 // Добавить модификатор только для чтения
 
         public ManagedPtr(IntPtr address)
         {

@@ -30,6 +30,7 @@ namespace ManualMapInjection.Injection
 
         #region code
 
+        #pragma warning disable CA1822 // Mark members as static
         private PIMAGE_DOS_HEADER GetDosHeader(IntPtr address)
         {
             var imageDosHeader = (PIMAGE_DOS_HEADER)address;
@@ -223,6 +224,7 @@ namespace ManualMapInjection.Injection
         {
             IntPtr pFunc = IntPtr.Zero;
 
+            #pragma warning disable IDE0059 // Ненужное присваивание значения
             Imports.ReadProcessMemory(_hProcess, moduleBase, out IMAGE_DOS_HEADER hdrDos, out UIntPtr dwRead);
 
             if (!hdrDos.isValid)
@@ -645,7 +647,9 @@ namespace ManualMapInjection.Injection
             return result;
         }
 
+        #pragma warning disable IDE0060 // Удалите неиспользуемый параметр
         private bool ProcessSection(char[] name, IntPtr baseAddress, IntPtr remoteAddress, ulong rawData, ulong virtualAddress, ulong rawSize, ulong virtualSize, uint protectFlag)
+        #pragma warning restore IDE0060 // Удалите неиспользуемый параметр
         {
             if (
                 !Imports.WriteProcessMemory(_hProcess, new IntPtr(remoteAddress.ToInt64() + (long)virtualAddress), new IntPtr(baseAddress.ToInt64() + (long)rawData),
@@ -732,7 +736,9 @@ namespace ManualMapInjection.Injection
 
         private bool CallEntryPoint(IntPtr baseAddress, uint entrypoint, bool async)
         {
+            #pragma warning disable IDE0028 // Упростите инициализацию коллекции
             var buffer = new List<byte>();
+            #pragma warning restore IDE0028 // Упростите инициализацию коллекции
             buffer.Add(0x68);
             buffer.AddRange(BitConverter.GetBytes(baseAddress.ToInt32()));
             buffer.Add(0x68);
@@ -780,6 +786,7 @@ namespace ManualMapInjection.Injection
 
             var buffer = new byte[0xFF * 4];
             if (!Imports.ReadProcessMemory(_hProcess, new IntPtr(tlsDirectory.Value.AddressOfCallBacks), buffer, out UIntPtr dwRead))
+            #pragma warning restore IDE0059 // Ненужное присваивание значения
             {
                 return false;
             }
@@ -942,6 +949,7 @@ namespace ManualMapInjection.Injection
         }
 
         private void FreeHandle(GCHandle handle)
+        #pragma warning restore CA1822 // Mark members as static
         {
             if (handle.IsAllocated)
             {
@@ -1000,6 +1008,7 @@ namespace ManualMapInjection.Injection
 #else
 #pragma warning disable CS0168 // Переменная объявлена, но не используется
 #endif
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
 #if DEBUG
 #else
@@ -1010,6 +1019,7 @@ namespace ManualMapInjection.Injection
                 Debug.WriteLine($"Unexpected error {e}");
 #endif
             }
+#pragma warning restore CA1031 // Do not catch general exception types
             finally
             {
                 // close stuff

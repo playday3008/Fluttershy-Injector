@@ -32,6 +32,7 @@ namespace ManualMapInjection.Injection.Win32
         IMAGE_SUBSYSTEM_XBOX = 14
     }
 
+    [Flags]
     public enum DllCharacteristicsType : ushort
     {
         RES_0 = 0x0001,
@@ -264,6 +265,7 @@ namespace ManualMapInjection.Injection.Win32
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    #pragma warning disable CA1815 // Override equals and operator equals on value types
     public struct IMAGE_DOS_HEADER
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)] public char[] e_magic; // Magic number
@@ -286,6 +288,7 @@ namespace ManualMapInjection.Injection.Win32
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)] public UInt16[] e_res2; // Reserved words
         public Int32 e_lfanew; // File address of new exe header
 
+        #pragma warning disable IDE1006 // Стили именования
         private string _e_magic
         {
             get { return new string(e_magic); }
@@ -546,6 +549,7 @@ namespace ManualMapInjection.Injection.Win32
         }
 
         public bool isValid
+        #pragma warning restore IDE1006 // Стили именования
         {
             get
             {
@@ -610,7 +614,9 @@ namespace ManualMapInjection.Injection.Win32
         public UIntPtr UniqueProcessId;
         public IntPtr InheritedFromUniqueProcessId;
 
+        #pragma warning disable CA1822 // Mark members as static
         public int Size
+        #pragma warning restore CA1822 // Mark members as static
         {
             get { return (int)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)); }
         }
@@ -709,6 +715,7 @@ namespace ManualMapInjection.Injection.Win32
 
     [StructLayout(LayoutKind.Sequential)]
     public struct FILETIME
+    #pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public uint DateTimeLow;
         public uint DateTimeHigh;

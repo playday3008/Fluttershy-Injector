@@ -6,7 +6,9 @@ namespace DLLInjectionMarcin
 {
     public class DLLInjector
     {
+        #pragma warning disable IDE0044 // Добавить модификатор только для чтения
         private IInjectionStrategy _injectionStrategy;
+        #pragma warning restore IDE0044 // Добавить модификатор только для чтения
 
         public DLLInjector(InjectionMethod injectionMethod)
         {
@@ -16,7 +18,7 @@ namespace DLLInjectionMarcin
         public void Inject(int pid, string pathToDll, InjectionOptions injectionOptions = null)
         {
             if (pid <= 0)
-                throw new ArgumentException("Invalid process pid: " + pid, "pid");
+                throw new ArgumentException("Invalid process pid: " + pid, nameof(pid));
 
             if (string.IsNullOrWhiteSpace(pathToDll) || !File.Exists(pathToDll))
                 throw new ArgumentException(string.Format("Cannot access DLL: \"{0}\"", pathToDll));

@@ -272,7 +272,7 @@ namespace Injector
                         manualMap(dllPath.ToCharArray(), pid);
                     else
                         throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
-                });
+                }).ConfigureAwait(false);
             }
             else if (x64)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
@@ -286,7 +286,7 @@ namespace Injector
             try
             {
                 var injector = new DLLInjector(injectionMethod);
-                await Task.Run(() => injector.Inject(pid, dllPath));
+                await Task.Run(() => injector.Inject(pid, dllPath)).ConfigureAwait(false);
             }
             #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -365,7 +365,7 @@ namespace Injector
                         }
                         // return succeeded  
                         return;
-                    });
+                    }).ConfigureAwait(false);
 
             }
         }
