@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,10 +22,11 @@ namespace Injector
         DialogResult archDll = DialogResult.None;
 
         #region DllImport
+
         [DllImport("BLLI.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BypassLLI(int pid);
 
-    #if WIN64
+        #if WIN64
         private class Inflame64
         {
             [DllImport("I64.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -32,7 +34,7 @@ namespace Injector
             public static extern void manualMap(char[] dllName, int PID);
             #pragma warning restore IDE1006 // Стили именования
         }
-    #else
+        #else
         private class Inflame32
         {
             [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -40,7 +42,8 @@ namespace Injector
             public static extern void manualMap(char[] dllName, int PID);
             #pragma warning restore IDE1006 // Стили именования
         }
-    #endif
+        #endif
+
         #endregion
 
         public Main()
@@ -106,6 +109,11 @@ namespace Injector
                 {
                     BypassLLIRun(SelectedProcessId);
                     DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.CREATE_REMOTE_THREAD);
+                }
+                else if (InjectMethodCB.SelectedIndex == 3)
+                {
+                    BypassLLIRun(SelectedProcessId);
+                    XenforoInj(SelectedProcessId, DllPathTextBox.Text);
                 }
                 SwitchUI(false);
             }
@@ -177,7 +185,7 @@ namespace Injector
                 creditsForm.Show();
         }
 
-#region Injection Methods
+        #region Injection Methods
 
         private void ManualMapCSx32(int pid, string dllPath)
         {
@@ -197,67 +205,53 @@ namespace Injector
             string dll = Path.GetRandomFileName().Replace(".", "") + ".dll";
             File.Copy(dllPath, dll, true);
             File.SetAttributes(dll, FileAttributes.Hidden);
-#if WIN64
+        #if WIN64
             if (x64 & x32 == true)
             {
                 bool locked = false;
-                var I64 = new FileInfo("I64.dll");
-                if (IsFileLocked(I64))
-                    locked = true;
-                try
+                await Task.Run(() =>
                 {
-                    await Task.Run(() =>
+                    string I64 = "I64.dll";
+                    if (IsFileLocked(new FileInfo(I64)))
+                        locked = true;
+                    if (!locked)
+                        File.Delete(I64);
+                    if (!File.Exists(I64))
                     {
-                        if (!locked)
-                            File.Delete("I64.dll");
-                        if (!File.Exists("I64.dll"))
-                        {
-                            File.WriteAllBytes("I64.dll", Properties.Resources.Inflame64);
-                            File.SetAttributes("I64.dll", FileAttributes.Hidden);
-                            File.SetAttributes("I64.dll", FileAttributes.ReadOnly);
-                            File.SetAttributes("I64.dll", FileAttributes.Temporary);
-                        }
-                        if (File.Exists("I64.dll"))
-                            Inflame64.manualMap(dll.ToCharArray(), pid);
-                        else
+                        File.WriteAllBytes(I64, Properties.Resources.Inflame64);
+                        File.SetAttributes(I64, FileAttributes.Hidden);
+                        File.SetAttributes(I64, FileAttributes.ReadOnly);
+                        File.SetAttributes(I64, FileAttributes.Temporary);
+                    }
+                    if (File.Exists(I64))
+                        Inflame64.manualMap(dll.ToCharArray(), pid);
+                    else
                             throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
-                    });
-                }
-                catch (Exception ex) when (ex is UnauthorizedAccessException)
-                {
-                    await Task.Run(() => Inflame64.manualMap(dll.ToCharArray(), pid));
-                }
+                });
             }
-#else
+        #else
             if (!x64 & x32 == false)
             {
                 bool locked = false;
-                var I = new FileInfo("I.dll");
-                if (IsFileLocked(I))
-                    locked = true;
-                try
+                await Task.Run(() =>
                 {
-                    await Task.Run(() =>
+                    string I = "I.dll";
+                    if (IsFileLocked(new FileInfo(I)))
+                        locked = true;
+                    if (!locked)
+                        File.Delete(I);
+                    if (!File.Exists(I))
                     {
-                        if (!locked)
-                            File.Delete("I.dll");
-                        if (!File.Exists("I.dll"))
-                        {
-                            File.WriteAllBytes("I.dll", Properties.Resources.Inflame);
-                            File.SetAttributes("I.dll", FileAttributes.Hidden);
-                            File.SetAttributes("I.dll", FileAttributes.ReadOnly);
-                            File.SetAttributes("I.dll", FileAttributes.Temporary);
-                        }
-                        if (File.Exists("I.dll"))
-                            Inflame32.manualMap(dll.ToCharArray(), pid);
-                        else
-                            throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
-                    });
-                }
-                catch (Exception ex) when (ex is UnauthorizedAccessException)
-                {
-                    await Task.Run(() => Inflame32.manualMap(dll.ToCharArray(), pid));
-                }
+                        File.WriteAllBytes(I, Properties.Resources.Inflame);
+                        File.SetAttributes(I, FileAttributes.Hidden);
+                        File.SetAttributes(I, FileAttributes.ReadOnly);
+                        File.SetAttributes(I, FileAttributes.Temporary);
+                    }
+                    if (File.Exists(I))
+                        Inflame32.manualMap(dll.ToCharArray(), pid);
+                    else
+                        throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
+                });
             }
         #endif
             else if (x64/* & x32 == false*/)
@@ -274,9 +268,162 @@ namespace Injector
                 var injector = new DLLInjector(injectionMethod);
                 await Task.Run(() => injector.Inject(pid, dllPath));
             }
+            #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 MetroMessageBox.Show(this, ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error, 150);
+            }
+            #pragma warning restore CA1031 // Do not catch general exception types
+        }
+
+        #region XenforoInjectReq
+
+        [DllImport("kernel32")]
+        #pragma warning disable CA1401 // P/Invokes should not be visible
+        public static extern IntPtr CreateRemoteThread(
+          IntPtr hProcess,
+          IntPtr lpThreadAttributes,
+          uint dwStackSize,
+          UIntPtr lpStartAddress, // raw Pointer into remote process  
+          IntPtr lpParameter,
+          uint dwCreationFlags,
+          out IntPtr lpThreadId
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenProcess(
+            UInt32 dwDesiredAccess,
+            Int32 bInheritHandle,
+            Int32 dwProcessId
+            );
+
+        [DllImport("kernel32.dll")]
+        public static extern Int32 CloseHandle(
+        IntPtr hObject
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern bool VirtualFreeEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            UIntPtr dwSize,
+            uint dwFreeType
+        );
+
+        #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        public static extern UIntPtr GetProcAddress(
+            IntPtr hModule,
+            string procName
+        );
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr VirtualAllocEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            uint dwSize,
+            uint flAllocationType,
+            uint flProtect
+        );
+
+        [DllImport("kernel32.dll")]
+        static extern bool WriteProcessMemory(
+            IntPtr hProcess,
+            IntPtr lpBaseAddress,
+            string lpBuffer,
+            UIntPtr nSize,
+            out IntPtr lpNumberOfBytesWritten
+        );
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
+        public static extern IntPtr GetModuleHandle(
+        #pragma warning restore CA1401 // P/Invokes should not be visible
+            string lpModuleName
+        );
+
+        [DllImport("kernel32", SetLastError = true, ExactSpelling = true)]
+        internal static extern Int32 WaitForSingleObject(
+            IntPtr handle,
+            Int32 milliseconds
+        );
+
+        public static void XenforoInjectDLL(IntPtr hProcess, String strDLLName)
+        {
+
+            // Length of string containing the DLL file name +1 byte padding  
+            Int32 LenWrite = strDLLName.Length + 1;
+            // Allocate memory within the virtual address space of the target process  
+            IntPtr AllocMem = (IntPtr)VirtualAllocEx(hProcess, (IntPtr)null, (uint)LenWrite, 0x1000, 0x40); //allocation pour WriteProcessMemory  
+
+            // Write DLL file name to allocated memory in target process  
+            WriteProcessMemory(hProcess, AllocMem, strDLLName, (UIntPtr)LenWrite, out _);
+            // Function pointer "Injector"  
+            UIntPtr Injector = (UIntPtr)GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+
+            if (Injector == null)
+            {
+                MessageBox.Show(" Injector Error! \n ");
+                // return failed  
+                return;
+            }
+
+            // Create thread in target process, and store handle in hThread  
+            IntPtr hThread = (IntPtr)CreateRemoteThread(hProcess, (IntPtr)null, 0, Injector, AllocMem, 0, out _);
+            // Make sure thread handle is valid  
+            if (hThread == null)
+            {
+                //incorrect thread handle ... return failed  
+                MessageBox.Show(" hThread [ 1 ] Error! \n ");
+                return;
+            }
+            // Time-out is 10 seconds...  
+            int Result = WaitForSingleObject(hThread, 10 * 1000);
+            // Check whether thread timed out...  
+            #pragma warning disable CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
+            if (Result == 0x00000080L || Result == 0x00000102L || Result == 0xFFFFFFFF)
+            #pragma warning restore CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
+            {
+                /* Thread timed out... */
+                MessageBox.Show(" hThread [ 2 ] Error! \n ");
+                // Make sure thread handle is valid before closing... prevents crashes.  
+                if (hThread != null)
+                {
+                    //Close thread in target process  
+                    CloseHandle(hThread);
+                }
+                return;
+            }
+            // Sleep thread for 1 second  
+            Thread.Sleep(1000);
+            // Clear up allocated space ( Allocmem )  
+            VirtualFreeEx(hProcess, AllocMem, (UIntPtr)0, 0x8000);
+            // Make sure thread handle is valid before closing... prevents crashes.  
+            if (hThread != null)
+            {
+                //Close thread in target process  
+                CloseHandle(hThread);
+            }
+            // return succeeded  
+            return;
+        }
+
+        #endregion
+
+        private async void XenforoInj(int pid, String dllPath)
+        {
+            Int32 ProcID = pid;
+            if (ProcID >= 0)
+            {
+                IntPtr hProcess = OpenProcess(0x1F0FFF, 1, ProcID);
+                if (hProcess == null)
+                {
+                    MetroMessageBox.Show(this, "OpenProcess() Failed!");
+                    return;
+                }
+                else
+                    await Task.Run(() =>XenforoInjectDLL(hProcess, dllPath));
+
             }
         }
 
@@ -290,27 +437,22 @@ namespace Injector
                 bool locked = false;
                 await Task.Run(() =>
                 {
-                    var BLLI = new FileInfo("BLLI.dll");
-                    if (IsFileLocked(BLLI))
+                    var BLLI = "BLLI.dll";
+                    if (IsFileLocked(new FileInfo(BLLI)))
                         locked = true;
-                    try
+                    if (!locked)
+                        File.Delete(BLLI);
+                    if (!File.Exists(BLLI))
                     {
-                        if (!locked)
-                            File.Delete("BLLI.dll");
-                        if (!File.Exists("BLLI.dll"))
-                        {
-                            File.WriteAllBytes("BLLI.dll", Properties.Resources.BypassLLI);
-                            File.SetAttributes("BLLI.dll", FileAttributes.Hidden);
-                            File.SetAttributes("BLLI.dll", FileAttributes.ReadOnly);
-                            File.SetAttributes("BLLI.dll", FileAttributes.Temporary);
-                        }
-                        if (File.Exists("BLLI.dll"))
-                            BypassLLI(pid);
+                        File.WriteAllBytes(BLLI, Properties.Resources.BypassLLI);
+                        File.SetAttributes(BLLI, FileAttributes.Hidden);
+                        File.SetAttributes(BLLI, FileAttributes.ReadOnly);
+                        File.SetAttributes(BLLI, FileAttributes.Temporary);
                     }
-                    catch (Exception ex) when (ex is UnauthorizedAccessException)
-                    {
+                    if (File.Exists(BLLI))
                         BypassLLI(pid);
-                    }
+                    else
+                        throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
                 }).ConfigureAwait(false);
             }
         }

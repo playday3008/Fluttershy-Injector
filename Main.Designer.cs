@@ -244,13 +244,14 @@
             // InjectMethodCB
             // 
             this.InjectMethodCB.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.InjectMethodCB.DropDownWidth = 260;
+            this.InjectMethodCB.DropDownWidth = 250;
             this.InjectMethodCB.FormattingEnabled = true;
             this.InjectMethodCB.ItemHeight = 23;
             this.InjectMethodCB.Items.AddRange(new object[] {
             "ManualMap (C#) (x32 only)",
             "ManualMap (Inflame) (x32 only)",
-            "CreateRemoteThread (C#) (x32 only)"});
+            "CreateRemoteThread (C#) (x32 only)",
+            "LoadLibraryA (C#/C++) (x32 only)"});
             this.InjectMethodCB.Location = new System.Drawing.Point(19, 232);
             this.InjectMethodCB.Name = "InjectMethodCB";
             this.InjectMethodCB.Size = new System.Drawing.Size(171, 29);
