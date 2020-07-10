@@ -85,29 +85,29 @@
     <Compile Include="Credits.Designer.cs">
       <DependentUpon>Credits.cs</DependentUpon>
     </Compile>
-    <Compile Include="DllInjectorMarcin\DLLInjectionFailedException.cs" />
-    <Compile Include="DllInjectorMarcin\DLLInjector.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionMethod.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionOptions.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionStrategies\CreateRemoteThreadInjectionStrategy.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionStrategies\IInjectionStrategy.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionStrategies\InjectionStrategyFactory.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionStrategies\LoadLibraryInjectionStrategyBase.cs" />
-    <Compile Include="DllInjectorMarcin\InjectionStrategies\NtCreateThreadExInjectionStrategy.cs" />
-    <Compile Include="DllInjectorMarcin\NativeMethods.cs" />
-    <Compile Include="DllInjectorMarcin\Utils.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\DLLInjectionFailedException.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\DLLInjector.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionMethod.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionOptions.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionStrategies\CreateRemoteThreadInjectionStrategy.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionStrategies\IInjectionStrategy.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionStrategies\InjectionStrategyFactory.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionStrategies\LoadLibraryInjectionStrategyBase.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\InjectionStrategies\NtCreateThreadExInjectionStrategy.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\NativeMethods.cs" />
+    <Compile Include="Injection\DllInjectorMarcin\Utils.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
-    <Compile Include="ManualMap\Helpers.cs" />
-    <Compile Include="ManualMap\ManualMapInjector.cs" />
-    <Compile Include="ManualMap\Types\ManagedPtr.cs" />
-    <Compile Include="ManualMap\Win32\Definitions.cs" />
-    <Compile Include="ManualMap\Win32\Imports.cs" />
-    <Compile Include="ManualMap\Win32\PDefinitions.cs" />
+    <Compile Include="Injection\ManualMap\Helpers.cs" />
+    <Compile Include="Injection\ManualMap\ManualMapInjector.cs" />
+    <Compile Include="Injection\ManualMap\Types\ManagedPtr.cs" />
+    <Compile Include="Injection\ManualMap\Win32\Definitions.cs" />
+    <Compile Include="Injection\ManualMap\Win32\Imports.cs" />
+    <Compile Include="Injection\ManualMap\Win32\PDefinitions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Credits.resx">
@@ -154,8 +154,8 @@
   <ItemGroup>
     <Content Include="Bypass\BypassLLI.dll" />
     <Content Include="Bypass\VAC-Bypass-Loader.exe" />
-    <Content Include="Inflame\Inflame.dll" />
-    <Content Include="Inflame\Inflame64.dll" />
+    <Content Include="Injection\Inflame\Inflame.dll" />
+    <Content Include="Injection\Inflame\Inflame64.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
