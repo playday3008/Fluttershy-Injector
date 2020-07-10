@@ -26,23 +26,73 @@ namespace Injector
         [DllImport("BLLI.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BypassLLI(int pid);
 
-        #if WIN64
-        private class Inflame64
-        {
-            [DllImport("I64.dll", CallingConvention = CallingConvention.Cdecl)]
-            #pragma warning disable IDE1006 // Стили именования
-            public static extern void manualMap(char[] dllName, int PID);
-            #pragma warning restore IDE1006 // Стили именования
-        }
-        #else
-        private class Inflame32
-        {
-            [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
-            #pragma warning disable IDE1006 // Стили именования
-            public static extern void manualMap(char[] dllName, int PID);
-            #pragma warning restore IDE1006 // Стили именования
-        }
-        #endif
+        [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
+        #pragma warning disable IDE1006 // Стили именования
+        #pragma warning disable CA1401 // P/Invokes should not be visible
+        public static extern void manualMap(char[] dllName, int PID);
+        #pragma warning restore CA1401 // P/Invokes should not be visible
+        #pragma warning restore IDE1006 // Стили именования
+
+
+        [DllImport("kernel32")]
+        #pragma warning disable CA1401 // P/Invokes should not be visible
+        public static extern IntPtr CreateRemoteThread(
+          IntPtr hProcess,
+          IntPtr lpThreadAttributes,
+          uint dwStackSize,
+          UIntPtr lpStartAddress, // raw Pointer into remote process  
+          IntPtr lpParameter,
+          uint dwCreationFlags,
+          out IntPtr lpThreadId
+        );
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr OpenProcess(
+            UInt32 dwDesiredAccess,
+            Int32 bInheritHandle,
+            Int32 dwProcessId
+            );
+
+        [DllImport("kernel32.dll")]
+        public static extern Int32 CloseHandle(IntPtr hObject);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern bool VirtualFreeEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            UIntPtr dwSize,
+            uint dwFreeType
+        );
+
+        #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        public static extern UIntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+        static extern IntPtr VirtualAllocEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            uint dwSize,
+            uint flAllocationType,
+            uint flProtect
+        );
+
+        [DllImport("kernel32.dll")]
+        static extern bool WriteProcessMemory(
+            IntPtr hProcess,
+            IntPtr lpBaseAddress,
+            string lpBuffer,
+            UIntPtr nSize,
+            out IntPtr lpNumberOfBytesWritten
+        );
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
+        #pragma warning restore CA1401 // P/Invokes should not be visible
+
+        [DllImport("kernel32", SetLastError = true, ExactSpelling = true)]
+        internal static extern Int32 WaitForSingleObject(IntPtr handle, Int32 milliseconds);
 
         #endregion
 
@@ -192,7 +242,8 @@ namespace Injector
             if (!x64 & x32 == false)
             {
                 var injector = new ManualMapInjector(Process.GetProcessById(pid)) { AsyncInjection = true };
-                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 160);
+                var injected = $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}";
+                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + injected, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 160);
             }
             else if (x64)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
@@ -202,34 +253,6 @@ namespace Injector
 
         private async void Inflame(int pid, string dllPath)
         {
-            string dll = Path.GetRandomFileName().Replace(".", "") + ".dll";
-            File.Copy(dllPath, dll, true);
-            File.SetAttributes(dll, FileAttributes.Hidden);
-        #if WIN64
-            if (x64 & x32 == true)
-            {
-                bool locked = false;
-                await Task.Run(() =>
-                {
-                    string I64 = "I64.dll";
-                    if (IsFileLocked(new FileInfo(I64)))
-                        locked = true;
-                    if (!locked)
-                        File.Delete(I64);
-                    if (!File.Exists(I64))
-                    {
-                        File.WriteAllBytes(I64, Properties.Resources.Inflame64);
-                        File.SetAttributes(I64, FileAttributes.Hidden);
-                        File.SetAttributes(I64, FileAttributes.ReadOnly);
-                        File.SetAttributes(I64, FileAttributes.Temporary);
-                    }
-                    if (File.Exists(I64))
-                        Inflame64.manualMap(dll.ToCharArray(), pid);
-                    else
-                            throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
-                });
-            }
-        #else
             if (!x64 & x32 == false)
             {
                 bool locked = false;
@@ -248,15 +271,14 @@ namespace Injector
                         File.SetAttributes(I, FileAttributes.Temporary);
                     }
                     if (File.Exists(I))
-                        Inflame32.manualMap(dll.ToCharArray(), pid);
+                        manualMap(dllPath.ToCharArray(), pid);
                     else
                         throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
                 });
             }
-        #endif
-            else if (x64/* & x32 == false*/)
+            else if (x64)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (/*!x64 & */x32 == true)
+            else if (x32 == true)
                 MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
 
         }
@@ -276,140 +298,6 @@ namespace Injector
             #pragma warning restore CA1031 // Do not catch general exception types
         }
 
-        #region XenforoInjectReq
-
-        [DllImport("kernel32")]
-        #pragma warning disable CA1401 // P/Invokes should not be visible
-        public static extern IntPtr CreateRemoteThread(
-          IntPtr hProcess,
-          IntPtr lpThreadAttributes,
-          uint dwStackSize,
-          UIntPtr lpStartAddress, // raw Pointer into remote process  
-          IntPtr lpParameter,
-          uint dwCreationFlags,
-          out IntPtr lpThreadId
-        );
-
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr OpenProcess(
-            UInt32 dwDesiredAccess,
-            Int32 bInheritHandle,
-            Int32 dwProcessId
-            );
-
-        [DllImport("kernel32.dll")]
-        public static extern Int32 CloseHandle(
-        IntPtr hObject
-        );
-
-        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
-        static extern bool VirtualFreeEx(
-            IntPtr hProcess,
-            IntPtr lpAddress,
-            UIntPtr dwSize,
-            uint dwFreeType
-        );
-
-        #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        public static extern UIntPtr GetProcAddress(
-            IntPtr hModule,
-            string procName
-        );
-
-        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
-        static extern IntPtr VirtualAllocEx(
-            IntPtr hProcess,
-            IntPtr lpAddress,
-            uint dwSize,
-            uint flAllocationType,
-            uint flProtect
-        );
-
-        [DllImport("kernel32.dll")]
-        static extern bool WriteProcessMemory(
-            IntPtr hProcess,
-            IntPtr lpBaseAddress,
-            string lpBuffer,
-            UIntPtr nSize,
-            out IntPtr lpNumberOfBytesWritten
-        );
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
-        public static extern IntPtr GetModuleHandle(
-        #pragma warning restore CA1401 // P/Invokes should not be visible
-            string lpModuleName
-        );
-
-        [DllImport("kernel32", SetLastError = true, ExactSpelling = true)]
-        internal static extern Int32 WaitForSingleObject(
-            IntPtr handle,
-            Int32 milliseconds
-        );
-
-        public static void XenforoInjectDLL(IntPtr hProcess, String strDLLName)
-        {
-
-            // Length of string containing the DLL file name +1 byte padding  
-            Int32 LenWrite = strDLLName.Length + 1;
-            // Allocate memory within the virtual address space of the target process  
-            IntPtr AllocMem = (IntPtr)VirtualAllocEx(hProcess, (IntPtr)null, (uint)LenWrite, 0x1000, 0x40); //allocation pour WriteProcessMemory  
-
-            // Write DLL file name to allocated memory in target process  
-            WriteProcessMemory(hProcess, AllocMem, strDLLName, (UIntPtr)LenWrite, out _);
-            // Function pointer "Injector"  
-            UIntPtr Injector = (UIntPtr)GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
-
-            if (Injector == null)
-            {
-                MessageBox.Show(" Injector Error! \n ");
-                // return failed  
-                return;
-            }
-
-            // Create thread in target process, and store handle in hThread  
-            IntPtr hThread = (IntPtr)CreateRemoteThread(hProcess, (IntPtr)null, 0, Injector, AllocMem, 0, out _);
-            // Make sure thread handle is valid  
-            if (hThread == null)
-            {
-                //incorrect thread handle ... return failed  
-                MessageBox.Show(" hThread [ 1 ] Error! \n ");
-                return;
-            }
-            // Time-out is 10 seconds...  
-            int Result = WaitForSingleObject(hThread, 10 * 1000);
-            // Check whether thread timed out...  
-            #pragma warning disable CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
-            if (Result == 0x00000080L || Result == 0x00000102L || Result == 0xFFFFFFFF)
-            #pragma warning restore CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
-            {
-                /* Thread timed out... */
-                MessageBox.Show(" hThread [ 2 ] Error! \n ");
-                // Make sure thread handle is valid before closing... prevents crashes.  
-                if (hThread != null)
-                {
-                    //Close thread in target process  
-                    CloseHandle(hThread);
-                }
-                return;
-            }
-            // Sleep thread for 1 second  
-            Thread.Sleep(1000);
-            // Clear up allocated space ( Allocmem )  
-            VirtualFreeEx(hProcess, AllocMem, (UIntPtr)0, 0x8000);
-            // Make sure thread handle is valid before closing... prevents crashes.  
-            if (hThread != null)
-            {
-                //Close thread in target process  
-                CloseHandle(hThread);
-            }
-            // return succeeded  
-            return;
-        }
-
-        #endregion
-
         private async void XenforoInj(int pid, String dllPath)
         {
             Int32 ProcID = pid;
@@ -422,7 +310,64 @@ namespace Injector
                     return;
                 }
                 else
-                    await Task.Run(() =>XenforoInjectDLL(hProcess, dllPath));
+                    await Task.Run(() =>
+                    {
+                        // Length of string containing the DLL file name +1 byte padding  
+                        Int32 LenWrite = dllPath.Length + 1;
+                        // Allocate memory within the virtual address space of the target process  
+                        IntPtr AllocMem = (IntPtr)VirtualAllocEx(hProcess, (IntPtr)null, (uint)LenWrite, 0x1000, 0x40); //allocation pour WriteProcessMemory  
+
+                        // Write DLL file name to allocated memory in target process  
+                        WriteProcessMemory(hProcess, AllocMem, dllPath, (UIntPtr)LenWrite, out _);
+                        // Function pointer "Injector"  
+                        UIntPtr Injector = (UIntPtr)GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+
+                        if (Injector == null)
+                        {
+                            MessageBox.Show(" Injector Error! \n ");
+                            // return failed  
+                            return;
+                        }
+
+                        // Create thread in target process, and store handle in hThread  
+                        IntPtr hThread = (IntPtr)CreateRemoteThread(hProcess, (IntPtr)null, 0, Injector, AllocMem, 0, out _);
+                        // Make sure thread handle is valid  
+                        if (hThread == null)
+                        {
+                            //incorrect thread handle ... return failed  
+                            MessageBox.Show(" hThread [ 1 ] Error! \n ");
+                            return;
+                        }
+                        // Time-out is 10 seconds...  
+                        int Result = WaitForSingleObject(hThread, 10 * 1000);
+                        // Check whether thread timed out...  
+                        #pragma warning disable CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
+                        if (Result == 0x00000080L || Result == 0x00000102L || Result == 0xFFFFFFFF)
+                        #pragma warning restore CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
+                        {
+                            /* Thread timed out... */
+                            MessageBox.Show(" hThread [ 2 ] Error! \n ");
+                            // Make sure thread handle is valid before closing... prevents crashes.  
+                            if (hThread != null)
+                            {
+                                //Close thread in target process  
+                                CloseHandle(hThread);
+                            }
+                            return;
+                        }
+                        // Sleep thread for 1 second  
+                        Thread.Sleep(1000);
+                        // Clear up allocated space ( Allocmem )  
+                        VirtualFreeEx(hProcess, AllocMem, (UIntPtr)0, 0x8000);
+                        // Make sure thread handle is valid before closing... prevents crashes.  
+                        if (hThread != null)
+                        {
+                            //Close thread in target process  
+                            CloseHandle(hThread);
+                        }
+                        // return succeeded  
+                        return;
+                    });
 
             }
         }

@@ -142,9 +142,6 @@
   <data name="Inflame" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Injection\Inflame\Inflame.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Inflame64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Injection\Inflame\Inflame64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="InjResult" xml:space="preserve">
     <value>Inject result:</value>
   </data>

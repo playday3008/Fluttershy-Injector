@@ -136,16 +136,6 @@ namespace Injector.Properties {
         }
         
         /// <summary>
-        ///   Поиск локализованного ресурса типа System.Byte[].
-        /// </summary>
-        internal static byte[] Inflame64 {
-            get {
-                object obj = ResourceManager.GetObject("Inflame64", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Ищет локализованную строку, похожую на Inject result:.
         /// </summary>
         internal static string InjResult {
