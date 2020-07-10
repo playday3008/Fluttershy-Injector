@@ -71,57 +71,12 @@ namespace Injector.Properties {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Your dll is broken, or someting  else, do you want to continue?.
-        /// </summary>
-        internal static string DllBroken {
-            get {
-                return ResourceManager.GetString("DllBroken", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на DLL: .
-        /// </summary>
-        internal static string DllLabel {
-            get {
-                return ResourceManager.GetString("DllLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Can&apos;t find PE header.
-        /// </summary>
-        internal static string GetDllArchErr {
-            get {
-                return ResourceManager.GetString("GetDllArchErr", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на https://github.com/playday3008.
-        /// </summary>
-        internal static string GitHubLink {
-            get {
-                return ResourceManager.GetString("GitHubLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Icon, аналогичного (Icon).
         /// </summary>
         internal static System.Drawing.Icon icon {
             get {
                 object obj = ResourceManager.GetObject("icon", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на INCORRECT DLL PATH.
-        /// </summary>
-        internal static string IncDllPath {
-            get {
-                return ResourceManager.GetString("IncDllPath", resourceCulture);
             }
         }
         
@@ -136,111 +91,12 @@ namespace Injector.Properties {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Inject result:.
-        /// </summary>
-        internal static string InjResult {
-            get {
-                return ResourceManager.GetString("InjResult", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на https://wind0wn.xyz/.
-        /// </summary>
-        internal static string MySiteLink {
-            get {
-                return ResourceManager.GetString("MySiteLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на ONLY x32 DLL&apos;S.
-        /// </summary>
-        internal static string OnlyX32Dll {
-            get {
-                return ResourceManager.GetString("OnlyX32Dll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на ONLY x32 PROCESSES.
-        /// </summary>
-        internal static string OnlyX32Proc {
-            get {
-                return ResourceManager.GetString("OnlyX32Proc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на DLL files (*.dll)|*.dll.
-        /// </summary>
-        internal static string OpenFileFilter {
-            get {
-                return ResourceManager.GetString("OpenFileFilter", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на PID: .
-        /// </summary>
-        internal static string PidLabel {
-            get {
-                return ResourceManager.GetString("PidLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Process: .
-        /// </summary>
-        internal static string ProcessLabel {
-            get {
-                return ResourceManager.GetString("ProcessLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Please refresh list.
-        /// </summary>
-        internal static string RefreshList {
-            get {
-                return ResourceManager.GetString("RefreshList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на SELCET PROCESS FIRST.
-        /// </summary>
-        internal static string SelProcFirst {
-            get {
-                return ResourceManager.GetString("SelProcFirst", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
         internal static byte[] VACBypassLoader {
             get {
                 object obj = ResourceManager.GetObject("VACBypassLoader", resourceCulture);
                 return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Do you want start VAC-Bypass?.
-        /// </summary>
-        internal static string VACquestion {
-            get {
-                return ResourceManager.GetString("VACquestion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на VBL.exe.
-        /// </summary>
-        internal static string VBLfile {
-            get {
-                return ResourceManager.GetString("VBLfile", resourceCulture);
             }
         }
     }

@@ -13,12 +13,12 @@ namespace Injector
 
         private void MetroLink1_Click(object sender, EventArgs e)
         {
-            Process.Start(Properties.Resources.GitHubLink);
+            Process.Start("https://github.com/playday3008");
         }
 
         private void MetroLink2_Click(object sender, EventArgs e)
         {
-            Process.Start(Properties.Resources.MySiteLink);
+            Process.Start("https://wind0wn.xyz/");
         }
 
         private void MetroLink3_Click(object sender, EventArgs e)

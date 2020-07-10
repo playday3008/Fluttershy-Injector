@@ -121,61 +121,13 @@
   <data name="BypassLLI" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Bypass\BypassLLI.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="DllBroken" xml:space="preserve">
-    <value>Your dll is broken, or someting  else, do you want to continue?</value>
-  </data>
-  <data name="DllLabel" xml:space="preserve">
-    <value>DLL: </value>
-  </data>
-  <data name="GetDllArchErr" xml:space="preserve">
-    <value>Can't find PE header</value>
-  </data>
-  <data name="GitHubLink" xml:space="preserve">
-    <value>https://github.com/playday3008</value>
-  </data>
   <data name="icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>icon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="IncDllPath" xml:space="preserve">
-    <value>INCORRECT DLL PATH</value>
   </data>
   <data name="Inflame" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Injection\Inflame\Inflame.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="InjResult" xml:space="preserve">
-    <value>Inject result:</value>
-  </data>
-  <data name="MySiteLink" xml:space="preserve">
-    <value>https://wind0wn.xyz/</value>
-  </data>
-  <data name="OnlyX32Dll" xml:space="preserve">
-    <value>ONLY x32 DLL'S</value>
-  </data>
-  <data name="OnlyX32Proc" xml:space="preserve">
-    <value>ONLY x32 PROCESSES</value>
-  </data>
-  <data name="OpenFileFilter" xml:space="preserve">
-    <value>DLL files (*.dll)|*.dll</value>
-  </data>
-  <data name="PidLabel" xml:space="preserve">
-    <value>PID: </value>
-  </data>
-  <data name="ProcessLabel" xml:space="preserve">
-    <value>Process: </value>
-  </data>
-  <data name="RefreshList" xml:space="preserve">
-    <value>Please refresh list</value>
-  </data>
-  <data name="SelProcFirst" xml:space="preserve">
-    <value>SELCET PROCESS FIRST</value>
-  </data>
   <data name="VACBypassLoader" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Bypass\VAC-Bypass-Loader.exe;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="VACquestion" xml:space="preserve">
-    <value>Do you want start VAC-Bypass?</value>
-  </data>
-  <data name="VBLfile" xml:space="preserve">
-    <value>VBL.exe</value>
   </data>
 </root>

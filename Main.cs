@@ -16,21 +16,29 @@ namespace Injector
 {
     public partial class Main : MetroForm
     {
-        private int SelectedProcessId = 0;
-        private bool x64 = false;
-        private bool? x32 = false;
-        DialogResult archDll = DialogResult.None;
+        private int SelectedProcessId = 0; // process id
+        private bool x64 = false; // x64 = true - x64bit process, x64 = false - x32bit process
+        private bool? x32 = false; // x32 = true - x64bit DLL, x32 = false - x32bit DLL, x32 = null - bloken DLL
+        DialogResult archDll = DialogResult.None; // Yes - try to inject broken dll, No - skip
 
         #region DllImport
 
+        /// <summary>
+        /// External C++ function (BLLI)
+        /// </summary>
+        /// <param name="pid">Process ID</param>
         [DllImport("BLLI.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BypassLLI(int pid);
 
+        /// <summary>
+        /// External C++ function (Inflame)
+        /// </summary>
+        /// <param name="dllName">Path to DLL (.ToCharArray())</param>
+        /// <param name="PID">Prcess ID</param>
         [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
         #pragma warning disable IDE1006, CA1401 // Стили именования // P/Invokes should not be visible
         public static extern void manualMap(char[] dllName, int PID);
         #pragma warning restore IDE1006, CA1401 // Стили именования // P/Invokes should not be visible
-
 
         [DllImport("kernel32")]
         #pragma warning disable CA1401 // P/Invokes should not be visible
@@ -49,7 +57,7 @@ namespace Injector
             UInt32 dwDesiredAccess,
             Int32 bInheritHandle,
             Int32 dwProcessId
-            );
+        );
 
         [DllImport("kernel32.dll")]
         public static extern Int32 CloseHandle(IntPtr hObject);
@@ -98,24 +106,22 @@ namespace Injector
         {
             InitializeComponent();
 
-            RefreshButton_Click(null, EventArgs.Empty);
-            InjectMethodCB.SelectedIndex = 0;
+            RefreshButton_Click(null, EventArgs.Empty); // automatically refresh process list
+            InjectMethodCB.SelectedIndex = 0; // set to default element "ManualMap (C#) (x32 only)"
         }
 
         private void RefreshButton_Click(object sender, EventArgs e)
         {
-            ProcessList.Items.Clear();
-            Process[] MyProcess = Process.GetProcesses();
-            for (int i = 0; i < MyProcess.Length; i++)
+            ProcessList.Items.Clear();// clear process list
+            Process[] MyProcess = Process.GetProcesses(); // get process list
+            for (int i = 0; i < MyProcess.Length; i++)// add processes to ProcessList (step-by-step)
                 ProcessList.Items.Add(MyProcess[i].ProcessName + ".exe - " + MyProcess[i].Id);
             int maxWidth = 0, temp;
             foreach (var obj in ProcessList.Items)
-            {
+            {// function to set DropDownWidth dynamically
                 temp = TextRenderer.MeasureText(obj.ToString(), ProcessList.Font).Width;
                 if (temp > maxWidth)
-                {
                     maxWidth = temp;
-                }
             }
             ProcessList.DropDownWidth = Convert.ToInt32(maxWidth * 1.35);
         }
@@ -125,20 +131,23 @@ namespace Injector
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 //openFileDialog.InitialDirectory = Path.GetDirectoryName(Application.ExecutablePath);
-                openFileDialog.Filter = Properties.Resources.OpenFileFilter;
-                openFileDialog.FilterIndex = 2;
+                openFileDialog.Filter = "DLL files (*.dll)|*.dll"; // show only .dll files
+                openFileDialog.FilterIndex = 1;
                 openFileDialog.RestoreDirectory = true;
 
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                if (openFileDialog.ShowDialog() == DialogResult.OK)// if dll selected
                 {
-                    x32 = UnmanagedDllIs64Bit(openFileDialog.FileName);
+                    x32 = UnmanagedDllIs64Bit(openFileDialog.FileName);// check dll arch
 
-                    if (x32 == null)
-                        archDll = MetroMessageBox.Show(this, Properties.Resources.DllBroken, "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
-                    if (archDll == DialogResult.Yes | archDll == DialogResult.None)
+                    if (x32 == null)// if can't detect dll arch
+                        archDll = MetroMessageBox.Show(this, "Your dll is broken, or someting  else, do you want to continue?", "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
+                    if (archDll == DialogResult.Yes | archDll == DialogResult.None) // else LOL
                     {
-                        DllPathTextBox.Text = openFileDialog.FileName;
-                        SelectedDllLabel.Text = Properties.Resources.DllLabel + openFileDialog.SafeFileName + ((bool)x32 ? " (x64)" : " (x32)");
+                        DllPathTextBox.Text = openFileDialog.FileName; // print path to dll to textbox
+                        if (archDll == DialogResult.None) // if arch detected
+                            SelectedDllLabel.Text = "DLL: " + openFileDialog.SafeFileName + ((bool)x32 ? " (x64)" : " (x32)");// show dll arch
+                        else if (archDll == DialogResult.Yes) // else LOL
+                            SelectedDllLabel.Text = "DLL: " + openFileDialog.SafeFileName + "(WTF dude)";// show dll arch
                     }
                 }
             }
@@ -146,147 +155,168 @@ namespace Injector
 
         private void InjectButton_Click(object sender, EventArgs e)
         {
-            if (ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text))
-            {
-                SwitchUI(true);
-                if (InjectMethodCB.SelectedIndex == 0)
-                    ManualMapCSx32(SelectedProcessId, DllPathTextBox.Text);
-                else if (InjectMethodCB.SelectedIndex == 1)
-                    Inflame(SelectedProcessId, DllPathTextBox.Text);
-                else if (InjectMethodCB.SelectedIndex == 2)
+            if (ProcessList.SelectedItem != null & !string.IsNullOrEmpty(DllPathTextBox.Text) & File.Exists(DllPathTextBox.Text) & Process.GetProcesses().Any(x => x.Id == SelectedProcessId))
+            { // if item selected and textbox !empty and file exist and process exist
+                SwitchUI(true); // disable UI controls
+                if (InjectMethodCB.SelectedIndex == 0) // if selected "ManualMap (C#) (x32 only)"
+                    ManualMapCSx32(SelectedProcessId, DllPathTextBox.Text); // run injection
+                else if (InjectMethodCB.SelectedIndex == 1) // if selected "ManualMap (Inflame) (x32 only)"
+                    Inflame(SelectedProcessId, DllPathTextBox.Text); // run injection
+                else if (InjectMethodCB.SelectedIndex == 2) // if selected "CreateRemoteThread (C#) (x32 only)"
                 {
-                    BypassLLIRun(SelectedProcessId);
-                    DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.CREATE_REMOTE_THREAD);
+                    BypassLLIRun(SelectedProcessId); // Bypass LoadLibrary injection if csgo.exe detected
+                    DllInjectorMarcin(SelectedProcessId, DllPathTextBox.Text, InjectionMethod.CREATE_REMOTE_THREAD); // run injection
                 }
-                else if (InjectMethodCB.SelectedIndex == 3)
+                else if (InjectMethodCB.SelectedIndex == 3) // if selected "LoadLibraryA (C#/C++) (x32 only)
                 {
-                    BypassLLIRun(SelectedProcessId);
-                    XenforoInj(SelectedProcessId, DllPathTextBox.Text);
+                    BypassLLIRun(SelectedProcessId); // Bypass LoadLibrary injection if csgo.exe detected
+                    XenforoInj(SelectedProcessId, DllPathTextBox.Text); // run injection
                 }
-                SwitchUI(false);
+                SwitchUI(false); // release UI controls
             }
-            else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text))
-                MetroMessageBox.Show(this, Properties.Resources.IncDllPath, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (ProcessList.SelectedItem == null)
-                MetroMessageBox.Show(this, Properties.Resources.SelProcFirst, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (string.IsNullOrEmpty(DllPathTextBox.Text) | !File.Exists(DllPathTextBox.Text)) // if textbox empty or file !exist
+                MetroMessageBox.Show(this, "INCORRECT DLL PATH", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (ProcessList.SelectedItem == null) // if process not selected
+                MetroMessageBox.Show(this, "SELCET PROCESS FIRST", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (!Process.GetProcesses().Any(x => x.Id == SelectedProcessId)) // if process !exist
+                MetroMessageBox.Show(this, "Please refresh process list", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
         private void VACBypassLabel_Click(object sender, EventArgs e)
         {
-            DialogResult vac = MetroMessageBox.Show(this, Properties.Resources.VACquestion, "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
+            DialogResult vac = MetroMessageBox.Show(this, "Do you want start VAC-Bypass?", "Fluttershy-Injector", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, 120);
             if (vac == DialogResult.Yes)
-            {
-                SwitchUI(true);
-                VACBypassRun();
-                SwitchUI(false);
+            {// if clicked "Yes"
+                SwitchUI(true); // disable UI controls
+                VACBypassRun(); // run VACBypass function
+                SwitchUI(false); // release UI controls
             }
         }
 
         private void DllPathTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (File.Exists(DllPathTextBox.Text))
-            {
-                if (Path.GetExtension(DllPathTextBox.Text) == ".dll")
-                {
-                    x32 = UnmanagedDllIs64Bit(DllPathTextBox.Text);
+            if (File.Exists(DllPathTextBox.Text)) // if file exist
+            { // then check file extension
+                if (Path.GetExtension(DllPathTextBox.Text) == ".dll") // if extension .dll
+                { // then check dll arch
+                    x32 = UnmanagedDllIs64Bit(DllPathTextBox.Text); // x32 = true - x64bit DLL, x32 = false - x32bit DLL, x32 = null - bloken DLL
 
-                    if (x32 != null)
-                        SelectedDllLabel.Text = Properties.Resources.DllLabel + Path.GetFileName(DllPathTextBox.Text) + ((bool)x32 ? " (x64)" : " (x32)");
+                    if (x32 != null) // if arch detected
+                        SelectedDllLabel.Text = "DLL: " + Path.GetFileName(DllPathTextBox.Text) + ((bool)x32 ? " (x64)" : " (x32)"); // show arch
+                    else
+                        SelectedDllLabel.Text = "DLL: " + Path.GetFileName(DllPathTextBox.Text) + "(WTF dude)";
                 }
                 else
-                    SelectedDllLabel.Text = Properties.Resources.DllLabel;
+                    SelectedDllLabel.Text = "DLL: ";
             }
             else
-                SelectedDllLabel.Text = Properties.Resources.DllLabel;
+                SelectedDllLabel.Text = "DLL: ";
         }
 
         private void ProcessList_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // parse process id from selected process
             SelectedProcessId = int.Parse(ProcessList.SelectedItem.ToString().Substring(ProcessList.SelectedItem.ToString().IndexOf('-') + 2));
             if (Process.GetProcesses().Any(x => x.Id == SelectedProcessId))
-            {
+            {// if process exist
                 try
-                {
+                {// try detect process arch
                     if (IsWin64Emulator(Process.GetProcessById(SelectedProcessId)))
-                        x64 = false;
+                        x64 = false; // 32bit proc
                     else
-                        x64 = true;
+                        x64 = true; // 64bit proc
                 }
                 catch (Win32Exception ex)
                 {
-                    if (ex.NativeErrorCode != 0x00000005)
+                    if (ex.NativeErrorCode != 0x00000005) // if SYSTEM process, then cacth exception
                     {
                         throw;
                     }
                 }
-                SelectedProcLabel.Text = Properties.Resources.ProcessLabel + Process.GetProcessById(SelectedProcessId).ProcessName + ".exe" + (x64 ? " (x64)" : " (x32)");
-                SelectedPidLabel.Text = Properties.Resources.PidLabel + SelectedProcessId;
+                SelectedProcLabel.Text = "Process: " + Process.GetProcessById(SelectedProcessId).ProcessName + ".exe" + (x64 ? " (x64)" : " (x32)"); // show process arch
+                SelectedPidLabel.Text = "PID: " + SelectedProcessId; // show process id
             }
-            else
-                MetroMessageBox.Show(this, Properties.Resources.RefreshList, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else // if process !exist
+                MetroMessageBox.Show(this, "Please refresh process list", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
         private void CerditsButton_Click(object sender, EventArgs e)
         {
-            var creditsForm = new Credits();
-            if (!Application.OpenForms.OfType<Credits>().Any())
-                creditsForm.Show();
+            var creditsForm = new Credits(); // init credits window
+            if (!Application.OpenForms.OfType<Credits>().Any()) // If form !opened
+                creditsForm.Show(); // show form
         }
 
         #region Injection Methods
 
+        /// <summary>
+        /// ManualMap injection on C# using WinAPI functions
+        /// </summary>
+        /// <param name="pid">Process ID</param>
+        /// <param name="dllPath">Path to DLL</param>
         private void ManualMapCSx32(int pid, string dllPath)
         {
             if (!x64 & x32 == false)
-            {
-                var injector = new ManualMapInjector(Process.GetProcessById(pid)) { AsyncInjection = true };
-                var injected = $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}";
-                MetroMessageBox.Show(this, Properties.Resources.InjResult + Environment.NewLine + injected, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 160);
+            {// if proc and dll is x32bit
+                var injector = new ManualMapInjector(Process.GetProcessById(pid)) { AsyncInjection = true };// init injector
+                var injected = $"hmodule = 0x{injector.Inject(dllPath).ToInt64():x8}";// inject dll
+                MetroMessageBox.Show(this, "Inject result:" + Environment.NewLine + injected, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Information, 160); // show inject result
             }
-            else if (x64)
-                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (x32 == true)
-                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (x64)// if proc x64bit
+                MetroMessageBox.Show(this, "ONLY x32 PROCESSES", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (x32 != false)// if dll !x32bit
+                MetroMessageBox.Show(this, "ONLY x32 DLL'S", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
         }
 
+        /// <summary>
+        /// ManualMap injection on C++ (using DllImport) (Inflame)
+        /// </summary>
+        /// <param name="pid">Process ID</param>
+        /// <param name="dllPath">Path to DLL</param>
         private async void Inflame(int pid, string dllPath)
         {
             if (!x64 & x32 == false)
-            {
-                bool locked = false;
+            {// if proc and dll is x32bit
+                bool locked = false; // need to avoid IOException
                 await Task.Run(() =>
-                {
-                    string I = "I.dll";
-                    if (IsFileLocked(new FileInfo(I)))
-                        locked = true;
-                    if (!locked)
-                        File.Delete(I);
-                    if (!File.Exists(I))
+                {// run code async to avoid UI lags
+                    string Inflame = "I.dll"; // name of Inflame dll
+                    if (IsFileLocked(new FileInfo(Inflame))) // if file locked
+                        locked = true; // change to true
+                    if (!locked) // if file unlocked
+                        File.Delete(Inflame); // delete file
+                    if (!File.Exists(Inflame)) // if file not exists
                     {
-                        File.WriteAllBytes(I, Properties.Resources.Inflame);
-                        File.SetAttributes(I, FileAttributes.Hidden);
-                        File.SetAttributes(I, FileAttributes.ReadOnly);
-                        File.SetAttributes(I, FileAttributes.Temporary);
+                        File.WriteAllBytes(Inflame, Properties.Resources.Inflame); // Create Inflame dll from exe memory
+                        File.SetAttributes(Inflame, FileAttributes.Hidden); // hide dll from user
+                        File.SetAttributes(Inflame, FileAttributes.ReadOnly); // dll read-only
+                        File.SetAttributes(Inflame, FileAttributes.Temporary); // dll temporary
                     }
-                    if (File.Exists(I))
-                        manualMap(dllPath.ToCharArray(), pid);
-                    else
+                    if (File.Exists(Inflame)) // if dll exist
+                        manualMap(dllPath.ToCharArray(), pid); // inject dll
+                    else // if file !exist, throw exception
                         throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
                 }).ConfigureAwait(false);
             }
-            else if (x64)
-                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Proc, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
-            else if (x32 == true)
-                MetroMessageBox.Show(this, Properties.Resources.OnlyX32Dll, "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (x64)// if proc x64bit
+                MetroMessageBox.Show(this, "ONLY x32 PROCESSES", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
+            else if (x32 != false)// if dll !x32
+                MetroMessageBox.Show(this, "ONLY x32 DLL'S", "Fluttershy-Injector", MessageBoxButtons.OK, MessageBoxIcon.Error, 120);
 
         }
 
+        /// <summary>
+        /// ManualMap injection on C# using WinAPI functions
+        /// </summary>
+        /// <param name="pid">Process ID</param>
+        /// <param name="dllPath">Path to DLL</param>
+        /// <param name="injectionMethod">InjectionMethod.CREATE_REMOTE_THREAD or InjectionMethod.NT_CREATE_THREAD_EX</param>
         private async void DllInjectorMarcin(int pid, string dllPath, InjectionMethod injectionMethod)
         {
             try
-            {
-                var injector = new DLLInjector(injectionMethod);
-                await Task.Run(() => injector.Inject(pid, dllPath)).ConfigureAwait(false);
+            { // try to inject
+                var injector = new DLLInjector(injectionMethod); // init inject
+                await Task.Run(() => injector.Inject(pid, dllPath)).ConfigureAwait(false); // run inject async to avoid UI lags
             }
             #pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
@@ -296,19 +326,21 @@ namespace Injector
             #pragma warning restore CA1031 // Do not catch general exception types
         }
 
+        /// <summary>
+        /// CopyPaste from XenforoLoader
+        /// </summary>
+        /// <param name="pid">Process ID</param>
+        /// <param name="dllPath">Path to DLL</param>
         private async void XenforoInj(int pid, String dllPath)
         {
-            Int32 ProcID = pid;
-            if (ProcID >= 0)
+            IntPtr hProcess = OpenProcess(0x1F0FFF, 1, pid); // try to open process
+            if (hProcess == null)
             {
-                IntPtr hProcess = OpenProcess(0x1F0FFF, 1, ProcID);
-                if (hProcess == null)
-                {
-                    MetroMessageBox.Show(this, "OpenProcess() Failed!");
-                    return;
-                }
-                else
-                    await Task.Run(() =>
+                MetroMessageBox.Show(this, "OpenProcess() Failed!");
+                return;
+            }
+            else
+                await Task.Run(() =>
                     {
                         // Length of string containing the DLL file name +1 byte padding  
                         Int32 LenWrite = dllPath.Length + 1;
@@ -366,34 +398,37 @@ namespace Injector
                         // return succeeded  
                         return;
                     }).ConfigureAwait(false);
-
-            }
         }
 
         #endregion
 
         #region Functions
+
+        /// <summary>
+        /// Run LoadLibrary bypass function
+        /// </summary>
+        /// <param name="pid">Process ID</param>
         private async void BypassLLIRun(int pid)
         {
-            if (Path.GetFileName(Process.GetProcessById(pid).MainModule.FileName) == "csgo.exe")
-            {
-                bool locked = false;
+            if (Path.GetFileName(Process.GetProcessById(pid).MainModule.FileName) == "csgo.exe")// if process name is "csgo.exe"
+            {// then
+                bool locked = false; // need to avoid IOException
                 await Task.Run(() =>
-                {
-                    var BLLI = "BLLI.dll";
-                    if (IsFileLocked(new FileInfo(BLLI)))
-                        locked = true;
-                    if (!locked)
-                        File.Delete(BLLI);
-                    if (!File.Exists(BLLI))
+                {// run code async to avoid UI lags
+                    var BLLI = "BLLI.dll"; // name of BLLI dll
+                    if (IsFileLocked(new FileInfo(BLLI))) // if file locked
+                        locked = true; // change to true
+                    if (!locked) // if file unlocked
+                        File.Delete(BLLI); // delete file
+                    if (!File.Exists(BLLI)) // if file not exists
                     {
-                        File.WriteAllBytes(BLLI, Properties.Resources.BypassLLI);
-                        File.SetAttributes(BLLI, FileAttributes.Hidden);
-                        File.SetAttributes(BLLI, FileAttributes.ReadOnly);
-                        File.SetAttributes(BLLI, FileAttributes.Temporary);
+                        File.WriteAllBytes(BLLI, Properties.Resources.BypassLLI); // Create BLLI dll from exe memory
+                        File.SetAttributes(BLLI, FileAttributes.Hidden); // hide dll from user
+                        File.SetAttributes(BLLI, FileAttributes.ReadOnly); // dll read-only
+                        File.SetAttributes(BLLI, FileAttributes.Temporary); // dll temporary
                     }
-                    if (File.Exists(BLLI))
-                        BypassLLI(pid);
+                    if (File.Exists(BLLI)) // if dll exist
+                        BypassLLI(pid); // load BypassLLI function
                     else
                         throw new FileNotFoundException("Can't load dll, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
                 }).ConfigureAwait(false);
@@ -402,30 +437,34 @@ namespace Injector
 
         private async void VACBypassRun()// Bypass Loader code
         {
-            string VACBypass = Path.GetDirectoryName(Application.ExecutablePath) + "\\" + Properties.Resources.VBLfile;
-            await Task.Run(() =>
+            string VACBypass = Path.GetDirectoryName(Application.ExecutablePath) + "\\" + "VBL.exe";// VBL.exe location + FileName
+            await Task.Run(() =>// run async to avoid  UI lags
             {
-                if (File.Exists(VACBypass))
-                    File.Delete(VACBypass);
-                File.WriteAllBytes(VACBypass, Properties.Resources.VACBypassLoader);
-                if (File.Exists(VACBypass))
-                {
-                    File.SetAttributes(VACBypass, FileAttributes.Hidden);
-                    File.SetAttributes(VACBypass, FileAttributes.ReadOnly);
-                    File.SetAttributes(VACBypass, FileAttributes.Temporary);
-                    var proc = Process.Start(VACBypass);
-                    proc.WaitForExit();
-                    File.Delete(VACBypass);
+                if (File.Exists(VACBypass))// if "VBL.exe" exists
+                    File.Delete(VACBypass);// then del "VBL.exe"
+                File.WriteAllBytes(VACBypass, Properties.Resources.VACBypassLoader);// Create "VBL.exe" from exe memory
+                if (File.Exists(VACBypass))// check if "VBL.exe" exists
+                {// if exists, then
+                    File.SetAttributes(VACBypass, FileAttributes.Hidden);// hide file from user
+                    File.SetAttributes(VACBypass, FileAttributes.ReadOnly);// make it read-only
+                    File.SetAttributes(VACBypass, FileAttributes.Temporary);// make file temporary
+                    var proc = Process.Start(VACBypass); // Start VBL.exe
+                    proc.WaitForExit();// wait for process stop
+                    File.Delete(VACBypass);// delete VBL.exe
                 }
                 else
                     throw new FileNotFoundException("Can't load VACBypass module, try add:\n" + Path.GetDirectoryName(Application.ExecutablePath) + "\nfolder to antivirus exceptions");
             }).ConfigureAwait(false);
         }
 
-        private void SwitchUI(bool sw)
+        /// <summary>
+        /// Disable/Enable UI controls
+        /// </summary>
+        /// <param name="sw">true = off, false = on</param>
+        private void SwitchUI(bool sw)// on/off UI controls
         {
-            if (sw)
-            {
+            if (sw)// if "sw" true
+            {// then off
                 InjectButton.Enabled = false;
                 ProcessList.Enabled = false;
                 OpenFileButton.Enabled = false;
@@ -433,17 +472,22 @@ namespace Injector
                 DllPathTextBox.Enabled = false;
                 InjectMethodCB.Enabled = false;
             }
-            else if (!sw)
-            {
+            else if (!sw)// else "sw" false
+            {//then on
                 InjectButton.Enabled = true;
                 ProcessList.Enabled = true;
                 OpenFileButton.Enabled = true;
                 RefreshButton.Enabled = true;
                 DllPathTextBox.Enabled = true;
                 InjectMethodCB.Enabled = true;
-            }
+            };
         }
 
+        /// <summary>
+        /// Check if process x32/x64 bit
+        /// </summary>
+        /// <param name="process">Process handle</param>
+        /// <returns>true = x64 proc, false = x32 proc</returns>
         private static bool IsWin64Emulator(Process process)
         {
             if ((Environment.OSVersion.Version.Major > 5)
@@ -460,6 +504,11 @@ namespace Injector
             internal static extern bool IsWow64Process([In] IntPtr process, [Out] out bool wow64Process);
         }
 
+        /// <summary>
+        /// Get Dll arch
+        /// </summary>
+        /// <param name="dllPath">Path to DLL</param>
+        /// <returns>MachineType</returns>
         private static MachineType GetDllMachineType(string dllPath)
         {
             //see http://www.microsoft.com/whdc/system/platform/firmware/PECOFF.mspx
@@ -473,7 +522,7 @@ namespace Injector
             fs.Seek(peOffset, SeekOrigin.Begin);
             UInt32 peHead = br.ReadUInt32();
             if (peHead != 0x00004550) // "PE\0\0", little-endian
-                throw new Exception(Properties.Resources.GetDllArchErr);
+                throw new Exception("Can't find PE header");
             MachineType machineType = (MachineType)br.ReadUInt16();
             br.Close();
             fs.Close();
@@ -504,6 +553,11 @@ namespace Injector
             IMAGE_FILE_MACHINE_WCEMIPSV2 = 0x169,
         }
 
+        /// <summary>
+        /// Check dll arch x64/x32/WTF
+        /// </summary>
+        /// <param name="dllPath">Path to DLL</param>
+        /// <returns>x32 = true - x64bit DLL, x32 = false - x32bit DLL, x32 = null - bloken DLL</returns>
         private static bool? UnmanagedDllIs64Bit(string dllPath) // returns true if the dll is 64-bit, false if 32-bit, and null if unknown
         {
             switch (GetDllMachineType(dllPath))
@@ -518,6 +572,11 @@ namespace Injector
             }
         }
 
+        /// <summary>
+        /// Check if file locked by process
+        /// </summary>
+        /// <param name="file">FileInfo "filename"</param>
+        /// <returns>true = locked, false = unlocked</returns>
         protected virtual bool IsFileLocked(FileInfo file)
         {
             try
