@@ -250,8 +250,7 @@
             this.InjectMethodCB.Items.AddRange(new object[] {
             "ManualMap (C#) (x32 only)",
             "ManualMap (Inflame) (x32 only)",
-            "CreateRemoteThread (C#) (x32 only)",
-            "LoadLibraryA (C#/C++) (x32 only)"});
+            "CreateRemoteThread (C#) (x32 only)"});
             this.InjectMethodCB.Location = new System.Drawing.Point(19, 232);
             this.InjectMethodCB.Name = "InjectMethodCB";
             this.InjectMethodCB.Size = new System.Drawing.Size(171, 29);
