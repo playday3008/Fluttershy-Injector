@@ -27,15 +27,13 @@ namespace Injector
         private static extern void BypassLLI(int pid);
 
         [DllImport("I.dll", CallingConvention = CallingConvention.Cdecl)]
-        #pragma warning disable IDE1006 // Стили именования
-        #pragma warning disable CA1401 // P/Invokes should not be visible
+#pragma warning disable IDE1006, CA1401 // Стили именования // P/Invokes should not be visible
         public static extern void manualMap(char[] dllName, int PID);
-        #pragma warning restore CA1401 // P/Invokes should not be visible
-        #pragma warning restore IDE1006 // Стили именования
+#pragma warning restore IDE1006, CA1401 // Стили именования // P/Invokes should not be visible
 
 
         [DllImport("kernel32")]
-        #pragma warning disable CA1401 // P/Invokes should not be visible
+#pragma warning disable CA1401 // P/Invokes should not be visible
         public static extern IntPtr CreateRemoteThread(
           IntPtr hProcess,
           IntPtr lpThreadAttributes,
@@ -64,7 +62,7 @@ namespace Injector
             uint dwFreeType
         );
 
-        #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
+#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true)]
         public static extern UIntPtr GetProcAddress(IntPtr hModule, string procName);
 
@@ -87,9 +85,9 @@ namespace Injector
         );
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
+#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         public static extern IntPtr GetModuleHandle(string lpModuleName);
-        #pragma warning restore CA1401 // P/Invokes should not be visible
+#pragma warning restore CA1401 // P/Invokes should not be visible
 
         [DllImport("kernel32", SetLastError = true, ExactSpelling = true)]
         internal static extern Int32 WaitForSingleObject(IntPtr handle, Int32 milliseconds);
@@ -290,12 +288,12 @@ namespace Injector
                 var injector = new DLLInjector(injectionMethod);
                 await Task.Run(() => injector.Inject(pid, dllPath));
             }
-            #pragma warning disable CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
             {
                 MetroMessageBox.Show(this, ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error, 150);
             }
-            #pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private async void XenforoInj(int pid, String dllPath)
@@ -341,9 +339,9 @@ namespace Injector
                         // Time-out is 10 seconds...  
                         int Result = WaitForSingleObject(hThread, 10 * 1000);
                         // Check whether thread timed out...  
-                        #pragma warning disable CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
+#pragma warning disable CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
                         if (Result == 0x00000080L || Result == 0x00000102L || Result == 0xFFFFFFFF)
-                        #pragma warning restore CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
+#pragma warning restore CS0652 // Сравнение с константой интеграции бесполезно: константа находится за пределами диапазона типа
                         {
                             /* Thread timed out... */
                             MessageBox.Show(" hThread [ 2 ] Error! \n ");

@@ -21,14 +21,19 @@ namespace Injector
             Process.Start(Properties.Resources.MySiteLink);
         }
 
-        private void MetroLabel2_Click(object sender, EventArgs e)
+        private void MetroLink3_Click(object sender, EventArgs e)
         {
             Process.Start("https://github.com/danielkrupinski");
         }
 
-        private void MetroLabel3_Click(object sender, EventArgs e)
+        private void MetroLink4_Click(object sender, EventArgs e)
         {
             Process.Start("https://github.com/ThaisenPM");
+        }
+
+        private void MetroLink5_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://github.com/marcin-chwedczuk");
         }
     }
 }

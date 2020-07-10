@@ -34,6 +34,10 @@
             this.metroLink2 = new MetroFramework.Controls.MetroLink();
             this.metroLabel2 = new MetroFramework.Controls.MetroLabel();
             this.metroLabel3 = new MetroFramework.Controls.MetroLabel();
+            this.metroLink3 = new MetroFramework.Controls.MetroLink();
+            this.metroLink4 = new MetroFramework.Controls.MetroLink();
+            this.metroLink5 = new MetroFramework.Controls.MetroLink();
+            this.metroLabel4 = new MetroFramework.Controls.MetroLabel();
             this.SuspendLayout();
             // 
             // metroLabel1
@@ -68,7 +72,7 @@
             this.metroLink2.AutoSize = true;
             this.metroLink2.Location = new System.Drawing.Point(23, 82);
             this.metroLink2.Name = "metroLink2";
-            this.metroLink2.Size = new System.Drawing.Size(184, 23);
+            this.metroLink2.Size = new System.Drawing.Size(182, 23);
             this.metroLink2.Style = MetroFramework.MetroColorStyle.Purple;
             this.metroLink2.TabIndex = 2;
             this.metroLink2.Text = "https://wind0wn.xyz/ (My Site)";
@@ -81,35 +85,92 @@
             // 
             this.metroLabel2.AutoSize = true;
             this.metroLabel2.FontWeight = MetroFramework.MetroLabelWeight.Bold;
-            this.metroLabel2.Location = new System.Drawing.Point(23, 149);
+            this.metroLabel2.Location = new System.Drawing.Point(23, 137);
             this.metroLabel2.Name = "metroLabel2";
-            this.metroLabel2.Size = new System.Drawing.Size(303, 38);
+            this.metroLabel2.Size = new System.Drawing.Size(196, 19);
             this.metroLabel2.Style = MetroFramework.MetroColorStyle.Purple;
             this.metroLabel2.TabIndex = 3;
-            this.metroLabel2.Text = "Inflame by Daniel Krupiński:\r\nhttps://github.com/danielkrupinski (GitHub)";
+            this.metroLabel2.Text = "Inflame by Daniel Krupiński:";
             this.metroLabel2.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.metroLabel2.UseStyleColors = true;
-            this.metroLabel2.Click += new System.EventHandler(this.MetroLabel2_Click);
             // 
             // metroLabel3
             // 
             this.metroLabel3.AutoSize = true;
             this.metroLabel3.FontWeight = MetroFramework.MetroLabelWeight.Bold;
-            this.metroLabel3.Location = new System.Drawing.Point(23, 196);
+            this.metroLabel3.Location = new System.Drawing.Point(23, 185);
             this.metroLabel3.Name = "metroLabel3";
-            this.metroLabel3.Size = new System.Drawing.Size(268, 38);
+            this.metroLabel3.Size = new System.Drawing.Size(268, 19);
             this.metroLabel3.Style = MetroFramework.MetroColorStyle.Purple;
             this.metroLabel3.TabIndex = 4;
-            this.metroLabel3.Text = "x86 C# injection by Tyson (ThaisenPM):\r\nhttps://github.com/ThaisenPM";
+            this.metroLabel3.Text = "x86 C# injection by Tyson (ThaisenPM):";
             this.metroLabel3.Theme = MetroFramework.MetroThemeStyle.Dark;
             this.metroLabel3.UseStyleColors = true;
-            this.metroLabel3.Click += new System.EventHandler(this.MetroLabel3_Click);
+            // 
+            // metroLink3
+            // 
+            this.metroLink3.AutoSize = true;
+            this.metroLink3.Location = new System.Drawing.Point(23, 159);
+            this.metroLink3.Name = "metroLink3";
+            this.metroLink3.Size = new System.Drawing.Size(204, 23);
+            this.metroLink3.Style = MetroFramework.MetroColorStyle.Purple;
+            this.metroLink3.TabIndex = 5;
+            this.metroLink3.Text = "https://github.com/danielkrupinski";
+            this.metroLink3.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.metroLink3.UseSelectable = true;
+            this.metroLink3.UseStyleColors = true;
+            this.metroLink3.Click += new System.EventHandler(this.MetroLink3_Click);
+            // 
+            // metroLink4
+            // 
+            this.metroLink4.AutoSize = true;
+            this.metroLink4.Location = new System.Drawing.Point(23, 207);
+            this.metroLink4.Name = "metroLink4";
+            this.metroLink4.Size = new System.Drawing.Size(180, 23);
+            this.metroLink4.Style = MetroFramework.MetroColorStyle.Purple;
+            this.metroLink4.TabIndex = 6;
+            this.metroLink4.Text = "https://github.com/ThaisenPM";
+            this.metroLink4.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.metroLink4.UseSelectable = true;
+            this.metroLink4.UseStyleColors = true;
+            this.metroLink4.Click += new System.EventHandler(this.MetroLink4_Click);
+            // 
+            // metroLink5
+            // 
+            this.metroLink5.AutoSize = true;
+            this.metroLink5.Location = new System.Drawing.Point(23, 274);
+            this.metroLink5.Name = "metroLink5";
+            this.metroLink5.Size = new System.Drawing.Size(226, 23);
+            this.metroLink5.Style = MetroFramework.MetroColorStyle.Purple;
+            this.metroLink5.TabIndex = 8;
+            this.metroLink5.Text = "https://github.com/marcin-chwedczuk";
+            this.metroLink5.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.metroLink5.UseSelectable = true;
+            this.metroLink5.UseStyleColors = true;
+            this.metroLink5.Click += new System.EventHandler(this.MetroLink5_Click);
+            // 
+            // metroLabel4
+            // 
+            this.metroLabel4.AutoSize = true;
+            this.metroLabel4.FontWeight = MetroFramework.MetroLabelWeight.Bold;
+            this.metroLabel4.Location = new System.Drawing.Point(23, 233);
+            this.metroLabel4.Name = "metroLabel4";
+            this.metroLabel4.Size = new System.Drawing.Size(283, 38);
+            this.metroLabel4.Style = MetroFramework.MetroColorStyle.Purple;
+            this.metroLabel4.TabIndex = 7;
+            this.metroLabel4.Text = "Another x86 C# injection implementation\r\nby Marcin Chwedczuk:";
+            this.metroLabel4.Theme = MetroFramework.MetroThemeStyle.Dark;
+            this.metroLabel4.UseStyleColors = true;
             // 
             // Credits
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(344, 260);
+            this.ClientSize = new System.Drawing.Size(344, 328);
+            this.Controls.Add(this.metroLink5);
+            this.Controls.Add(this.metroLabel4);
+            this.Controls.Add(this.metroLink4);
+            this.Controls.Add(this.metroLink3);
             this.Controls.Add(this.metroLabel3);
             this.Controls.Add(this.metroLabel2);
             this.Controls.Add(this.metroLink2);
@@ -135,5 +196,9 @@
         private MetroFramework.Controls.MetroLink metroLink2;
         private MetroFramework.Controls.MetroLabel metroLabel2;
         private MetroFramework.Controls.MetroLabel metroLabel3;
+        private MetroFramework.Controls.MetroLink metroLink3;
+        private MetroFramework.Controls.MetroLink metroLink4;
+        private MetroFramework.Controls.MetroLink metroLink5;
+        private MetroFramework.Controls.MetroLabel metroLabel4;
     }
 }

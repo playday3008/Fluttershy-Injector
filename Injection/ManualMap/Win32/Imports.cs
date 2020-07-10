@@ -106,10 +106,12 @@ namespace ManualMapInjection.Injection.Win32
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, IntPtr lpBuffer, IntPtr nSize, out UIntPtr lpNumberOfBytesWritten);
 
+        #pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        #pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
         [DllImport("kernel32.dll")]
